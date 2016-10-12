@@ -26,7 +26,20 @@ bot.onText(/\/biggestboy/,
 bot.onText(/\/cutestbab/,
   function (msg) {
     console.log("Received command from: %s:%s", msg.chat.title, msg.from.username);
+    
     var fromId = msg.chat.id;
-    bot.sendMessage(fromId, "*" + msg.from.first_name + " " + msg.from.last_name + "* is the cutest bab!", {parse_mode:"Markdown"});
+
+    if (typeof msg.reply_to_message !== "undefined") {
+      console.log(msg.reply_to_message.from);
+
+      var lastname = typeof msg.reply_to_message.from.last_name !== "undefined" ? " " + msg.reply_to_message.from.last_name : "";
+      bot.sendMessage(fromId, "*" + msg.reply_to_message.from.first_name + lastname + "* is the cutest bab!", {parse_mode:"Markdown"});
+    }
+    else {
+      console.log(msg.from);
+
+      var lastname = typeof msg.from.last_name !== "undefined" ? " " + msg.from.last_name : "";
+      bot.sendMessage(fromId, "*" + msg.from.first_name + lastname + "* is the cutest bab!", {parse_mode:"Markdown"}                     );
+    }
   }
 );
