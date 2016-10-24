@@ -5,9 +5,70 @@ var bot = new TelegramBot(t.token, {
     polling: true
 });
 
+var years = 0;
+var months = 0;
+var weeks = 0;
+var days = 0;
+var hours = 0;
+var minutes = 0;
+var seconds = 0;
+
 var config = require('./config.json');
 
+function timer() {
+	
+	seconds+=1;
+	if (seconds > 59) {
+		
+		seconds = 0;
+		minutes+=1;
+		
+	}
+	
+	if (minutes > 59) {
+		
+		minutes = 0;
+		hours+=1;
+		
+	}
+	if (hours > 23) {
+		
+		hours = 0;
+		days+=1;
+		
+	}
+	
+	if (days > 6) {
+		
+		days = 0;
+		weeks+=1;
+		
+	}
+	
+	if (weeks > 3) {
+		
+		weeks = 0;
+		months+=1;
+		
+	}
+	if (months > 11){
+		
+		months = 0;
+		years+=1;
+		
+	}
+	
+	
+}
 
+bot.onText(/\/uptime/, function(msg) {
+	console.log("Recieved command from: %s:%s", msg.chat.title, msg.from.username);
+	var fromId = msg.chat.id;
+	bot.sendMessage(fromId, "Since my Last Restart I have Been active for: \n ```" + years + " Years\n"+ months + " Months\n" + weeks + " Weeks\n" + days + " Days\n" + hours + " Hours\n" + minutes + " Minutes\n" + seconds + " Seconds```", {
+		parse_mode: "Markdown"
+	});
+	
+});
 
 bot.onText(/\/biggestbab/,
     function(msg) {
@@ -63,3 +124,5 @@ bot.onText(/\/cutestbab/,
         }
     }
 );
+
+var intervalId = setInterval(timer, 1000); //Runs Every Second
