@@ -5,6 +5,17 @@ var bot = new TelegramBot(t.token, {
     polling: true
 });
 
+var fs = require("fs");
+
+/*function read(f) {
+  return fs.readFileSync(f).toString();
+}
+function include(f) {
+  eval.apply(global, [read(f)]);
+}*/
+
+//include('functions.js');
+
 var years = 0;
 var months = 0;
 var weeks = 0;
@@ -14,6 +25,22 @@ var minutes = 0;
 var seconds = 0;
 
 var config = require('./config.json');
+
+var commandArray = [];
+var functionArray = [];
+
+function addFunctionListener(command, functionName) // Example: addFunctionListener("/uptime", uptime);
+{
+	
+	commandArray.push(command);
+	functionArray.push(functionName);	
+	console.log("Added Function: "+functionName+" to Bot Database");
+	
+}
+
+
+
+
 
 function timer() {
 	
@@ -60,6 +87,28 @@ function timer() {
 	
 	
 }
+
+function testFunc(msg) {
+	
+	bot.sendMessage(msg.chat.id, "Success", {
+		parse_mode: "Markdown"
+	});
+	
+}
+
+
+bot.onText(/^\*?[a-zA-Z]{2,}\*?$/, function(msg) {
+	
+	var index = commandArray.indexOf(msg);
+	if(index >= 0)
+	{
+		//Function Exists
+		functionArray[index](msg);
+	}
+	
+	
+});
+
 
 bot.onText(/\/uptime/, function(msg) {
 	console.log("Recieved command from: %s:%s", msg.chat.title, msg.from.username);
@@ -126,3 +175,4 @@ bot.onText(/\/cutestbab/,
 );
 
 var intervalId = setInterval(timer, 1000); //Runs Every Second
+addFunctionListener(/\/testFunc/, testFunc);
