@@ -99,7 +99,7 @@ function testFunc(msg) {
 
 bot.onText(/^\*?[a-zA-Z]{2,}\*?$/, function(msg) {
 	
-	var index = commandArray.indexOf(msg);
+	var index = commandArray.indexOf(msg.text);
 	if(index >= 0)
 	{
 		//Function Exists
@@ -175,4 +175,4 @@ bot.onText(/\/cutestbab/,
 );
 
 var intervalId = setInterval(timer, 1000); //Runs Every Second
-addFunctionListener(/\/testFunc/, testFunc);
+addFunctionListener("/testFunc", testFunc);
