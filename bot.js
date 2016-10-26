@@ -194,12 +194,14 @@ bot.onText(/\/biggestbab/,
                 bot.sendMessage(fromId, "*" + msg.reply_to_message.from.first_name + lastname + "* is the biggest bab!", {
                     parse_mode: "Markdown"
                 });
-            } else {
-                bot.sendMessage(fromId, "*Matty* is the biggest bab!", {
-                    parse_mode: "Markdown"
-                });
             }
             console.log(msg.reply_to_message.from);
+        } else {
+            console.log("Received command from: %s:%s", msg.chat.title, msg.from.username);
+            var fromId = msg.chat.id;
+            bot.sendMessage(fromId, "*Matty* is the biggest bab!", {
+                parse_mode: "Markdown"
+            });
         }
     }
 );
