@@ -1,6 +1,8 @@
 var TelegramBot = require('node-telegram-bot-api');
 
 var t = require('./token.json');
+var config = require('./config.json');
+
 var bot = new TelegramBot(t.token, {
     polling: true
 });
@@ -24,18 +26,18 @@ var hours = 0;
 var minutes = 0;
 var seconds = 0;
 
-var config = require('./config.json');
+
 
 var commandArray = [];
 var functionArray = [];
 
 function addFunctionListener(command, functionName) // Example: addFunctionListener("/uptime", uptime);
 {
-	
-	commandArray.push(command);
-	functionArray.push(functionName);	
-	console.log("Added Function: "+functionName+" to Bot Database");
-	
+
+    commandArray.push(command);
+    functionArray.push(functionName);
+    console.log("Added Function: " + functionName + " to Bot Database");
+
 }
 
 
@@ -43,80 +45,79 @@ function addFunctionListener(command, functionName) // Example: addFunctionListe
 
 
 function timer() {
-	
-	seconds+=1;
-	if (seconds > 59) {
-		
-		seconds = 0;
-		minutes+=1;
-		
-	}
-	
-	if (minutes > 59) {
-		
-		minutes = 0;
-		hours+=1;
-		
-	}
-	if (hours > 23) {
-		
-		hours = 0;
-		days+=1;
-		
-	}
-	
-	if (days > 6) {
-		
-		days = 0;
-		weeks+=1;
-		
-	}
-	
-	if (weeks > 3) {
-		
-		weeks = 0;
-		months+=1;
-		
-	}
-	if (months > 11){
-		
-		months = 0;
-		years+=1;
-		
-	}
-	
-	
+
+    seconds += 1;
+    if (seconds > 59) {
+
+        seconds = 0;
+        minutes += 1;
+
+    }
+
+    if (minutes > 59) {
+
+        minutes = 0;
+        hours += 1;
+
+    }
+    if (hours > 23) {
+
+        hours = 0;
+        days += 1;
+
+    }
+
+    if (days > 6) {
+
+        days = 0;
+        weeks += 1;
+
+    }
+
+    if (weeks > 3) {
+
+        weeks = 0;
+        months += 1;
+
+    }
+    if (months > 11) {
+
+        months = 0;
+        years += 1;
+
+    }
+
+
 }
 
 function testFunc(msg) {
-	
-	bot.sendMessage(msg.chat.id, "Success", {
-		parse_mode: "Markdown"
-	});
-	
+
+    bot.sendMessage(msg.chat.id, "Success", {
+        parse_mode: "Markdown"
+    });
+
 }
 
 
 bot.onText(/^\*?[a-zA-Z]{2,}\*?$/, function(msg) {
-	
-	var index = commandArray.indexOf(msg.text);
-	if(index >= 0)
-	{
-		//Function Exists
-		functionArray[index](msg);
-	}
-	
-	
+
+    var index = commandArray.indexOf(msg.text);
+    if (index >= 0) {
+        //Function Exists
+        functionArray[index](msg);
+    }
+
+
 });
 
 
 bot.onText(/\/uptime/, function(msg) {
-	console.log("Recieved command from: %s:%s", msg.chat.title, msg.from.username);
-	var fromId = msg.chat.id;
-	bot.sendMessage(fromId, "Since my Last Restart I have Been active for: \n ```" + years + " Years\n"+ months + " Months\n" + weeks + " Weeks\n" + days + " Days\n" + hours + " Hours\n" + minutes + " Minutes\n" + seconds + " Seconds```", {
-		parse_mode: "Markdown"
-	});
-	
+    console.log("Recieved command from: %s:%s", msg.chat.title, msg.from.username);
+    var fromId = msg.chat.id;
+    bot.sendMessage(fromId, "Since my Last Restart I have Been active for: \n ```" + years + " Years\n" + months + " Months\n" + weeks + " Weeks\n" + days + " Days\n" + hours + " Hours\n" + minutes + " Minutes\n" + seconds + " Seconds```", {
+        parse_mode: "Markdown"
+    });
+
 });
 
 bot.onText(/\/biggestbab/,
@@ -168,6 +169,33 @@ bot.onText(/\/cutestbab/,
 
             var lastname = typeof msg.from.last_name !== "undefined" ? " " + msg.from.last_name : "";
             bot.sendMessage(fromId, "*" + msg.from.first_name + lastname + "* is the cutest bab!", {
+                parse_mode: "Markdown"
+            });
+        }
+    }
+);
+
+bot.onText(/\/biggestbab2/,
+    function(msg) {
+        console.log("Received command from: %s:%s", msg.chat.title, msg.from.username);
+
+        var fromId = msg.chat.id;
+
+        if (typeof msg.reply_to_message !== "undefined") {
+            var userID = msg.reply_to_message.from.ID
+
+            var index = config.BiggestBab.indexOf(userID);
+            if (index >= 0) {
+                var lastname = typeof msg.reply_to_message.from.last_name !== "undefined" ? " " + msg.reply_to_message.from.last_name : "";
+                bot.sendMessage(fromId, "*" + msg.reply_to_message.from.first_name + lastname + "* is the biggest bab!", {
+                    parse_mode: "Markdown"
+                });
+            }
+            console.log(msg.reply_to_message.from);
+        } else {
+            console.log("Received command from: %s:%s", msg.chat.title, msg.from.username);
+            var fromId = msg.chat.id;
+            bot.sendMessage(fromId, "*Matty* is the biggest bab!", {
                 parse_mode: "Markdown"
             });
         }
