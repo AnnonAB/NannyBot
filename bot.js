@@ -197,6 +197,13 @@ bot.onText(/\/biggestbab/,
             }
             console.log(msg.reply_to_message.from);
         } else {
+            var randomUserId = config.BiggestBab[Math.floor(Math.random() * config.BiggestBab.length) + 0];
+
+            console.log("RandomUserID: %s", randomUserId);
+
+            //bot.getChatMember(fromId, randomUserId);
+
+
             console.log("Received command from: %s:%s", msg.chat.title, msg.from.username);
             var fromId = msg.chat.id;
             bot.sendMessage(fromId, "*Matty* is the biggest bab!", {
