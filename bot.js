@@ -119,7 +119,7 @@ bot.onText(/\/uptime/, function(msg) {
     });
 
 });
-
+/*
 bot.onText(/\/biggestbab/,
     function(msg) {
         console.log("Received command from: %s:%s", msg.chat.title, msg.from.username);
@@ -129,6 +129,7 @@ bot.onText(/\/biggestbab/,
         });
     }
 );
+*/
 
 bot.onText(/\/biggestboy/,
     function(msg) {
@@ -175,29 +176,30 @@ bot.onText(/\/cutestbab/,
     }
 );
 
-bot.onText(/\/biggestbab2/,
+bot.onText(/\/biggestbab/,
     function(msg) {
         console.log("Received command from: %s:%s", msg.chat.title, msg.from.username);
 
         var fromId = msg.chat.id;
 
         if (typeof msg.reply_to_message !== "undefined") {
-            var userID = msg.reply_to_message.from.ID
+            var userID = msg.reply_to_message.from.id;
+            console.log("UserID: %s", userID);
 
             var index = config.BiggestBab.indexOf(userID);
+            console.log("index: %s", index);
+
             if (index >= 0) {
                 var lastname = typeof msg.reply_to_message.from.last_name !== "undefined" ? " " + msg.reply_to_message.from.last_name : "";
                 bot.sendMessage(fromId, "*" + msg.reply_to_message.from.first_name + lastname + "* is the biggest bab!", {
                     parse_mode: "Markdown"
                 });
+            } else {
+                bot.sendMessage(fromId, "*Matty* is the biggest bab!", {
+                    parse_mode: "Markdown"
+                });
             }
             console.log(msg.reply_to_message.from);
-        } else {
-            console.log("Received command from: %s:%s", msg.chat.title, msg.from.username);
-            var fromId = msg.chat.id;
-            bot.sendMessage(fromId, "*Matty* is the biggest bab!", {
-                parse_mode: "Markdown"
-            });
         }
     }
 );
