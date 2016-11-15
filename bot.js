@@ -1,4 +1,5 @@
 var TelegramBot = require('node-telegram-bot-api');
+var swearjar = require('swearjar');
 
 var t = require('./token.json');
 var config = require('./config.json');
@@ -18,107 +19,68 @@ function include(f) {
 
 //include('functions.js');
 
+var commandArray = [];
+var functionArray = [];
+var scoreRecords = [];
+var dailyScore = [];
+
+function userScore(userID, score, lastMessage) {
+    this.userID = userID;
+    this.score = score;
+    this.lastMessage = lastMessage;
+}
+
+function addFunctionListener(command, functionName) // Example: addFunctionListener("/uptime", uptime);
+{
+    commandArray.push(command);
+    functionArray.push(functionName);
+    console.log("Added Function: " + functionName + " to Bot Database");
+}
+
+
+/***** uptime *****/
+var intervalId = setInterval(timer, 1000); //Runs Every Second
 var years = 0;
-var months = 0;
 var weeks = 0;
 var days = 0;
 var hours = 0;
 var minutes = 0;
 var seconds = 0;
 
-
-
-var commandArray = [];
-var functionArray = [];
-
-function addFunctionListener(command, functionName) // Example: addFunctionListener("/uptime", uptime);
-{
-
-    commandArray.push(command);
-    functionArray.push(functionName);
-    console.log("Added Function: " + functionName + " to Bot Database");
-
-}
-
-
-
-
-
 function timer() {
-
-    seconds += 1;
-    if (seconds > 59) {
-
-        seconds = 0;
-        minutes += 1;
-
-    }
-
-    if (minutes > 59) {
-
-        minutes = 0;
-        hours += 1;
-
-    }
-    if (hours > 23) {
-
-        hours = 0;
-        days += 1;
-
-    }
-
-    if (days > 6) {
-
-        days = 0;
-        weeks += 1;
-
-    }
-
-    if (weeks > 3) {
-
-        weeks = 0;
-        months += 1;
-
-    }
-    if (months > 11) {
-
-        months = 0;
-        years += 1;
-
-    }
-
-
+    seconds++;
+    if (seconds > 59) { seconds = 0; minutes++; }
+    if (minutes > 59) { minutes = 0; hours++; }
+    if (hours > 23) { hours = 0; days++; dailyScore = null;}
+    if (days > 6) { days = 0; weeks++; }
+    if (weeks > 51) { weeks = 0; years++; }
 }
+
+bot.onText(/\/uptime/, function(msg) {
+    console.log("Recieved command from: %s:%s", msg.chat.title, msg.from.username);
+    var fromId = msg.chat.id;
+    bot.sendMessage(fromId, "Since my Last Restart I have Been active for: \n ```" + years + " Years\n" + weeks + " Weeks\n" + days + " Days\n" + hours + " Hours\n" + minutes + " Minutes\n" + seconds + " Seconds```", {
+        parse_mode: "Markdown"
+    });
+});
+
+/******************/
+
 
 function testFunc(msg) {
-
     bot.sendMessage(msg.chat.id, "Success", {
         parse_mode: "Markdown"
     });
-
 }
 
-
 bot.onText(/^\*?[a-zA-Z]{2,}\*?$/, function(msg) {
-
     var index = commandArray.indexOf(msg.text);
     if (index >= 0) {
         //Function Exists
         functionArray[index](msg);
     }
-
-
 });
 
-
-bot.onText(/\/uptime/, function(msg) {
-    console.log("Recieved command from: %s:%s", msg.chat.title, msg.from.username);
-    var fromId = msg.chat.id;
-    bot.sendMessage(fromId, "Since my Last Restart I have Been active for: \n ```" + years + " Years\n" + months + " Months\n" + weeks + " Weeks\n" + days + " Days\n" + hours + " Hours\n" + minutes + " Minutes\n" + seconds + " Seconds```", {
-        parse_mode: "Markdown"
-    });
-
-});
 /*
 bot.onText(/\/biggestbab/,
     function(msg) {
@@ -131,8 +93,29 @@ bot.onText(/\/biggestbab/,
 );
 */
 
-bot.onText(/\/biggestboy/,
-    function(msg) {
+bot.onText(/\/myscore/, function(msg) {
+        console.log("Received command from: %s:%s", msg.chat.title, msg.from.username);
+        var fromId = msg.chat.id;
+        var found = false;
+        var lastname = typeof msg.from.last_name !== "undefined" ? " " + msg.from.last_name : "";
+        for (var i = 0; i < scoreRecords.length; i++) {
+            if (scoreRecords[i].userID === msg.from.id) {
+                found = true;
+                bot.sendMessage(fromId, "*" + msg.from.first_name + lastname + "*, you're such a pottymouth! Your current score is *" + scoreRecords[i].score + "*\n I last caught you saying: " + scoreRecords[i].lastMessage , {
+                    parse_mode: "Markdown"
+                });
+                break;
+            }
+        }
+        if (found === false) {
+            bot.sendMessage(fromId, "*_Wow!_* " + msg.from.first_name + lastname +  " you're a good and well behaved bab. I have never caught a naughty word come out your mouth!", {
+                parse_mode: "Markdown"
+            });
+        }
+    }
+);
+
+bot.onText(/\/biggestboy/, function(msg) {
         console.log("Received command from: %s:%s", msg.chat.title, msg.from.username);
         var fromId = msg.chat.id;
         bot.sendMessage(fromId, "_looks around_\nI dunno little one, I dont see any big kids around here.", {
@@ -141,19 +124,7 @@ bot.onText(/\/biggestboy/,
     }
 );
 
-bot.onText(/\/oneandonlybigboy/,
-    function(msg) {
-        console.log("Received command from: %s:%s", msg.chat.title, msg.from.username)
-        var fromId = msg.chat.id;
-        bot.sendMessage(fromId, "*Elliot* is a coding troll who thinks he is a big boy", {
-            parse_mode: "Markdown"
-        });
-    }
-);
-
-
-bot.onText(/\/cutestbab/,
-    function(msg) {
+bot.onText(/\/cutestbab/, function(msg) {
         console.log("Received command from: %s:%s", msg.chat.title, msg.from.username);
 
         var fromId = msg.chat.id;
@@ -213,5 +184,34 @@ bot.onText(/\/biggestbab/,
     }
 );
 
-var intervalId = setInterval(timer, 1000); //Runs Every Second
+bot.onText(/(.+)/, function(msg, match) {
+    var score = swearjar.scorecard(match[0]);
+    var sum = 0;
+
+    for (i in score) {
+        if (score.hasOwnProperty(i)) {
+            sum += score[i]
+        }
+    }
+
+    if (sum > 0) {
+        var found = false;
+        for (var i = 0; i < scoreRecords.length; i++){
+            if (scoreRecords[i].userID === msg.from.id) {
+                found = true;
+                scoreRecords[i].score += sum;
+                scoreRecords[i].lastMessage = match[0];
+                console.log("%s swore again! current score: %s, last message was: %s", msg.from.username, scoreRecords[i].score, scoreRecords[i].lastMessage);
+                break;
+            }
+        }
+
+        if (found === false) {
+            scoreRecords.push(new userScore(msg.from.id, sum, match[0]));
+            console.log("%s swore for the first time! current score: %s, last message was %s", msg.from.username, scoreRecords[scoreRecords.length - 1].score, scoreRecords[scoreRecords.length - 1].lastMessage);
+        }
+    }
+});
+
+
 addFunctionListener("/testFunc", testFunc);
