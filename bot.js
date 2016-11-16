@@ -63,15 +63,28 @@ var seconds = 0;
 
 function timer() {
     seconds++;
-    if (seconds > 59) { seconds = 0; minutes++; }
+    if (seconds > 59) {
+        seconds = 0;
+        minutes++;
+    }
     if (minutes > 59) {
         minutes = 0;
         fs.writeFile('./config.json', JSON.stringify(config), 'utf8'); //write out config once an hour
         hours++;
     }
-    if (hours > 23) { hours = 0; days++; dailyScore = null;}
-    if (days > 6) { days = 0; weeks++; }
-    if (weeks > 51) { weeks = 0; years++; }
+    if (hours > 23) {
+        hours = 0;
+        days++;
+        dailyScore = null;
+    }
+    if (days > 6) {
+        days = 0;
+        weeks++;
+    }
+    if (weeks > 51) {
+        weeks = 0;
+        years++;
+    }
 }
 
 
@@ -113,63 +126,71 @@ bot.onText(/\/biggestbab/,
 );
 */
 
-bot.onText(/\/myscore/, function(msg) {
-        console.log("Received command from: %s:%s", msg.chat.title, msg.from.username);
-        var fromId = msg.chat.id;
-        var lastname = typeof msg.from.last_name !== "undefined" ? " " + msg.from.last_name : "";
+bot.onText(/\/score/, function(msg) {
+    console.log("Received command from: %s:%s", msg.chat.title, msg.from.username);
+    var fromId = msg.chat.id;
+    var messageToSend;
 
+    if (typeof msg.reply_to_message !== "undefined") {
+        var lastname = typeof msg.reply_to_message.last_name !== "undefined" ? " " + msg.reply_to_message.last_name : "";
+
+        var dailyScoreIndex = arrayObjectIndexOf(dailyScore, msg.reply_to_message.from.id, "userID");
+
+        if (dailyScoreIndex === -1) {
+            messageToSend = "*" + msg.reply_to_message.from.first_name + lastname + "* has been good. They have not used any naughty language today.";
+        } else {
+            messageToSend = "*" + msg.reply_to_message.from.first_name + lastname + "* has been very naughty and used bad language today. Their daily score is *" + dailyScore[dailyScoreIndex].score + "*";
+        }
+
+    } else {
         var scoreRecordIndex = arrayObjectIndexOf(config.scoreRecords, msg.from.id, "userID");
-        var dailyScoreIndex = arrayObjectIndexOf(dailyScore,  msg.from.id, "userID");
-
-        var messageToSend;
+        var dailyScoreIndex = arrayObjectIndexOf(dailyScore, msg.from.id, "userID");
+        var lastname = typeof msg.from.last_name !== "undefined" ? " " + msg.from.last_name : "";
 
         if (dailyScoreIndex === -1) {
             if (scoreRecordIndex === -1) {
-                messageToSend = "*Amazing!* " + msg.from.first_name + lastname +  " I have never heard you swear before. You get the biggest _hugs_ for being sooo good.";
+                messageToSend = "*Amazing!* " + msg.from.first_name + lastname + " I have never heard you swear before. You get the biggest _hugs_ for being sooo good.";
             } else {
-                messageToSend = "*_Wow!_* " + msg.from.first_name + lastname +  " you're a good and well behaved bab. I haven't caught any naughty words coming from your mouth today. ";
+                messageToSend = "*_Wow!_* " + msg.from.first_name + lastname + " you're a good and well behaved bab. I haven't caught any naughty words coming from your mouth today. ";
                 messageToSend += "But I have caught you swearing in the past.\n\nYour total score is *" + config.scoreRecords[scoreRecordIndex].score + "*.\n\nKeep up the good work!";
             }
-        }
-        else {
+        } else {
             messageToSend = "*" + msg.from.first_name + lastname + "*, you're such a pottymouth!\n\nYour current score for today is *" + dailyScore[dailyScoreIndex].score;
             messageToSend += "*.\nYour total score is *" + config.scoreRecords[scoreRecordIndex].score + "*.\n\nI last caught you saying:\n" + dailyScore[dailyScoreIndex].lastMessage + "\n";
         }
-        bot.sendMessage(fromId, messageToSend, { parse_mode: "Markdown"});
     }
-);
+    bot.sendMessage(fromId, messageToSend, {parse_mode: "Markdown"});
+});
 
 bot.onText(/\/biggestboy/, function(msg) {
-        console.log("Received command from: %s:%s", msg.chat.title, msg.from.username);
-        var fromId = msg.chat.id;
-        bot.sendMessage(fromId, "_looks around_\nI dunno little one, I dont see any big kids around here.", {
+    console.log("Received command from: %s:%s", msg.chat.title, msg.from.username);
+    var fromId = msg.chat.id;
+    bot.sendMessage(fromId, "_looks around_\nI dunno little one, I dont see any big kids around here.", {
+        parse_mode: "Markdown"
+    });
+});
+
+bot.onText(/\/cutestbab/, function(msg) {
+    console.log("Received command from: %s:%s", msg.chat.title, msg.from.username);
+
+    var fromId = msg.chat.id;
+
+    if (typeof msg.reply_to_message !== "undefined") {
+        console.log(msg.reply_to_message.from);
+
+        var lastname = typeof msg.reply_to_message.from.last_name !== "undefined" ? " " + msg.reply_to_message.from.last_name : "";
+        bot.sendMessage(fromId, "*" + msg.reply_to_message.from.first_name + lastname + "* is the cutest bab!", {
+            parse_mode: "Markdown"
+        });
+    } else {
+        console.log(msg.from);
+
+        var lastname = typeof msg.from.last_name !== "undefined" ? " " + msg.from.last_name : "";
+        bot.sendMessage(fromId, "*" + msg.from.first_name + lastname + "* is the cutest bab!", {
             parse_mode: "Markdown"
         });
     }
-);
-
-bot.onText(/\/cutestbab/, function(msg) {
-        console.log("Received command from: %s:%s", msg.chat.title, msg.from.username);
-
-        var fromId = msg.chat.id;
-
-        if (typeof msg.reply_to_message !== "undefined") {
-            console.log(msg.reply_to_message.from);
-
-            var lastname = typeof msg.reply_to_message.from.last_name !== "undefined" ? " " + msg.reply_to_message.from.last_name : "";
-            bot.sendMessage(fromId, "*" + msg.reply_to_message.from.first_name + lastname + "* is the cutest bab!", {
-                parse_mode: "Markdown"
-            });
-        } else {
-            console.log(msg.from);
-
-            var lastname = typeof msg.from.last_name !== "undefined" ? " " + msg.from.last_name : "";
-            bot.sendMessage(fromId, "*" + msg.from.first_name + lastname + "* is the cutest bab!", {
-                parse_mode: "Markdown"
-            });
-        }
-    }
-);
+});
 
 bot.onText(/\/biggestbab/,
     function(msg) {
@@ -221,7 +242,7 @@ bot.onText(/(.+)/, function(msg, match) {
     if (sum > 0) {
         var found = false;
         var scoreRecordIndex = arrayObjectIndexOf(config.scoreRecords, msg.from.id, "userID");
-        var dailyScoreIndex = arrayObjectIndexOf(dailyScore,  msg.from.id, "userID");
+        var dailyScoreIndex = arrayObjectIndexOf(dailyScore, msg.from.id, "userID");
 
         if (scoreRecordIndex === -1) {
             config.scoreRecords.push(new userScore(msg.from.id, sum, match[0]));
@@ -244,7 +265,7 @@ bot.onText(/(.+)/, function(msg, match) {
 });
 
 function arrayObjectIndexOf(myArray, searchTerm, property) {
-    for(var i = 0, len = myArray.length; i < len; i++) {
+    for (var i = 0, len = myArray.length; i < len; i++) {
         if (myArray[i][property] === searchTerm) return i;
     }
     return -1;
