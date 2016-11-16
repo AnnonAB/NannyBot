@@ -118,8 +118,8 @@ bot.onText(/\/myscore/, function(msg) {
         var fromId = msg.chat.id;
         var lastname = typeof msg.from.last_name !== "undefined" ? " " + msg.from.last_name : "";
 
-        var scoreRecordIndex = arrayObjectIndexOf(config.scoreRecords, config.scoreRecords.userID, msg.from.id);
-        var dailyScoreIndex = arrayObjectIndexOf(dailyScore, dailyScore.userID, msg.from.id);
+        var scoreRecordIndex = arrayObjectIndexOf(config.scoreRecords, msg.from.id, "userID");
+        var dailyScoreIndex = arrayObjectIndexOf(dailyScore,  msg.from.id, "userID");
 
         var messageToSend;
 
@@ -220,8 +220,8 @@ bot.onText(/(.+)/, function(msg, match) {
 
     if (sum > 0) {
         var found = false;
-        var scoreRecordIndex = arrayObjectIndexOf(config.scoreRecords, config.scoreRecords.userID, msg.from.id);
-        var dailyScoreIndex = arrayObjectIndexOf(dailyScore, dailyScore.userID, msg.from.id);
+        var scoreRecordIndex = arrayObjectIndexOf(config.scoreRecords, msg.from.id, "userID");
+        var dailyScoreIndex = arrayObjectIndexOf(dailyScore,  msg.from.id, "userID");
 
         if (scoreRecordIndex === -1) {
             config.scoreRecords.push(new userScore(msg.from.id, sum, match[0]));
