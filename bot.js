@@ -133,7 +133,7 @@ bot.onText(/\/myscore/, function(msg) {
         }
         else {
             messageToSend = "*" + msg.from.first_name + lastname + "*, you're such a pottymouth!\n\nYour current score for today is *" + dailyScore[dailyScoreIndex].score;
-            messageToSend += "*.\nYour total score is *" + config.scoreRecords[scoreRecordIndex].score + "*.\nI last caught you saying:\n" + dailyScore[dailyScoreIndex].lastMessage;
+            messageToSend += "*.\nYour total score is *" + config.scoreRecords[scoreRecordIndex].score + "*.\n\nI last caught you saying:\n" + dailyScore[dailyScoreIndex].lastMessage + "\n";
         }
         bot.sendMessage(fromId, messageToSend, { parse_mode: "Markdown"});
     }
