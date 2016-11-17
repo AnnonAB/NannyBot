@@ -1,110 +1,64 @@
-/**** NPM Module declerations ****/
-
-var TelegramBot = require('node-telegram-bot-api');
-var swearjar = require('swearjar');
-var moment = require('moment');
+/**** Requires ****/
+var TelegramBot = require('node-telegram-bot-api'); //npm module
+var swearjar = require('swearjar'); //npm module
+var moment = require('moment'); //npm module
 var fs = require('fs');
-/*********************************/
-
 var t = require('./token.json');
 var config = require('./config.json');
+/******************/
 
-fs.writeFile('./config.json', JSON.stringify(config), 'utf8'); //write out config once an hour
-
-var bot = new TelegramBot(t.token, {
-    polling: true
-});
-
-var fs = require("fs");
-
-/*function read(f) {
-  return fs.readFileSync(f).toString();
-}
-function include(f) {
-  eval.apply(global, [read(f)]);
-}*/
-
-//include('functions.js');
+var bot = new TelegramBot(t.token, {polling: true});
+var intervalId = setInterval(timer, 1000);
 
 var commandArray = [];
 var functionArray = [];
 var dailyScore = [];
 var scriptStarted = moment([]);
 
+var years = 0, weeks = 0, days = 0, hours = 0, minutes = 0, seconds = 0;
+
+
 if (typeof config.scoreRecords === 'undefined') {
     config.scoreRecords = [];
 }
-
-function userScore(userID, score, lastMessage, lastDate) {
-    this.userID = userID;
-    this.score = score;
-    this.lastMessage = lastMessage;
-}
-
-function addFunctionListener(command, functionName) // Example: addFunctionListener("/uptime", uptime);
-{
-    commandArray.push(command);
-    functionArray.push(functionName);
-    console.log("Added Function: " + functionName + " to Bot Database");
-}
-
-
-/***** uptime *****/
-
-
-
-var intervalId = setInterval(timer, 1000); //Runs Every Second
-var years = 0;
-var weeks = 0;
-var days = 0;
-var hours = 0;
-var minutes = 0;
-var seconds = 0;
-
-function timer() {
-    seconds++;
-    if (seconds > 59) {
-        seconds = 0;
-        minutes++;
-    }
-    if (minutes > 59) {
-        minutes = 0;
-        fs.writeFile('./config.json', JSON.stringify(config), 'utf8'); //write out config once an hour
-        hours++;
-    }
-    if (hours > 23) {
-        hours = 0;
-        days++;
-        dailyScore = null;
-    }
-    if (days > 6) {
-        days = 0;
-        weeks++;
-    }
-    if (weeks > 51) {
-        weeks = 0;
-        years++;
-    }
-}
-
-
-bot.onText(/\/uptime/, function(msg) {
-
-    console.log("Recieved command from: %s:%s", msg.chat.title, msg.from.username);
-    var fromId = msg.chat.id;
-    bot.sendMessage(fromId, "Since my Last Restart I have Been active for: \n ```" + years + " Years\n" + weeks + " Weeks\n" + days + " Days\n" + hours + " Hours\n" + minutes + " Minutes\n" + seconds + " Seconds```", {
-        parse_mode: "Markdown"
-    });
-});
-
-/******************/
-
 
 function testFunc(msg) {
     bot.sendMessage(msg.chat.id, "Success", {
         parse_mode: "Markdown"
     });
 }
+
+// the bot hears all!
+bot.onText(/(.+)/, function(msg, match) {
+    var score = swearjar.scorecard(match[0]);
+    var sum = 0;
+
+    for (i in score) {
+        if (score.hasOwnProperty(i)) {
+            sum += score[i];
+        }
+    }
+
+    if (sum > 0) {
+        var found = false;
+        var scoreRecordIndex = arrayObjectIndexOf(config.scoreRecords, msg.from.id, "userID");
+        var dailyScoreIndex = arrayObjectIndexOf(dailyScore, msg.from.id, "userID");
+
+        if (scoreRecordIndex === -1) {
+            config.scoreRecords.push(new userScore(msg.from.id, sum, match[0]));
+            dailyScore.push(new userScore(msg.from.id, sum, match[0]));
+        } else {
+            config.scoreRecords[scoreRecordIndex].score += sum;
+            if (dailyScoreIndex === -1) {
+                dailyScore.push(new userScore(msg.from.id, sum, match[0]));
+            } else {
+                dailyScore[dailyScoreIndex].score += sum;
+                dailyScore[dailyScoreIndex].lastMessage = match[0];
+            }
+        }
+        fs.writeFile('./config.json', JSON.stringify(config), 'utf8'); //and it doesnt forget either.
+    }
+});
 
 bot.onText(/^\*?[a-zA-Z]{2,}\*?$/, function(msg) {
     var index = commandArray.indexOf(msg.text);
@@ -114,21 +68,11 @@ bot.onText(/^\*?[a-zA-Z]{2,}\*?$/, function(msg) {
     }
 });
 
-/*
-bot.onText(/\/biggestbab/,
-    function(msg) {
-        console.log("Received command from: %s:%s", msg.chat.title, msg.from.username);
-        var fromId = msg.chat.id;
-        bot.sendMessage(fromId, "*Matty* is the biggest bab!", {
-            parse_mode: "Markdown"
-        });
-    }
-);
-*/
+bot.onText(/^\/uptime.?$/ig, function(msg) {
+    say(msg, "Since my Last Restart I have Been active for:```\n\n" + years + " Years\n" + weeks + " Weeks\n" + days + " Days\n" + hours + " Hours\n" + minutes + " Minutes\n" + seconds + " Seconds```");
+});
 
-bot.onText(/\/score/, function(msg) {
-    console.log("Received command from: %s:%s", msg.chat.title, msg.from.username);
-    var fromId = msg.chat.id;
+bot.onText(/^\/score.?$/ig, function(msg) {
     var messageToSend;
 
     if (typeof msg.reply_to_message !== "undefined") {
@@ -159,45 +103,28 @@ bot.onText(/\/score/, function(msg) {
             messageToSend += "*.\nYour total score is *" + config.scoreRecords[scoreRecordIndex].score + "*.\n\nI last caught you saying:\n" + dailyScore[dailyScoreIndex].lastMessage + "\n";
         }
     }
-    bot.sendMessage(fromId, messageToSend, {parse_mode: "Markdown"});
+    say(msg, messageToSend);
 });
 
-bot.onText(/\/biggestboy/, function(msg) {
-    console.log("Received command from: %s:%s", msg.chat.title, msg.from.username);
-    var fromId = msg.chat.id;
-    bot.sendMessage(fromId, "_looks around_\nI dunno little one, I dont see any big kids around here.", {
-        parse_mode: "Markdown"
-    });
+bot.onText(/^\/biggestkid.?$/ig, function(msg) {
+    say(msg, "_looks around_\nI dunno little one, I dont see any big kids around here.");
 });
 
-bot.onText(/\/cutestbab/, function(msg) {
-    console.log("Received command from: %s:%s", msg.chat.title, msg.from.username);
-
-    var fromId = msg.chat.id;
-
+bot.onText(/^\/cutestbab.?$/ig, function(msg) {
     if (typeof msg.reply_to_message !== "undefined") {
         console.log(msg.reply_to_message.from);
 
         var lastname = typeof msg.reply_to_message.from.last_name !== "undefined" ? " " + msg.reply_to_message.from.last_name : "";
-        bot.sendMessage(fromId, "*" + msg.reply_to_message.from.first_name + lastname + "* is the cutest bab!", {
-            parse_mode: "Markdown"
-        });
+        say(msg, "*" + msg.reply_to_message.from.first_name + lastname + "* is the cutest bab!");
     } else {
         console.log(msg.from);
 
         var lastname = typeof msg.from.last_name !== "undefined" ? " " + msg.from.last_name : "";
-        bot.sendMessage(fromId, "*" + msg.from.first_name + lastname + "* is the cutest bab!", {
-            parse_mode: "Markdown"
-        });
+        say(msg, "*" + msg.from.first_name + lastname + "* is the cutest bab!");
     }
 });
 
-bot.onText(/\/biggestbab/,
-    function(msg) {
-        console.log("Received command from: %s:%s", msg.chat.title, msg.from.username);
-
-        var fromId = msg.chat.id;
-
+bot.onText(/^\/biggestbab.?$/ig, function(msg) {
         if (typeof msg.reply_to_message !== "undefined") {
             var userID = msg.reply_to_message.from.id;
             console.log("UserID: %s", userID);
@@ -207,68 +134,88 @@ bot.onText(/\/biggestbab/,
 
             if (index >= 0) {
                 var lastname = typeof msg.reply_to_message.from.last_name !== "undefined" ? " " + msg.reply_to_message.from.last_name : "";
-                bot.sendMessage(fromId, "*" + msg.reply_to_message.from.first_name + lastname + "* is the biggest bab!", {
-                    parse_mode: "Markdown"
-                });
+                say(msg, "*" + msg.reply_to_message.from.first_name + lastname + "* is the biggest bab!");
             }
             console.log(msg.reply_to_message.from);
         } else {
             var randomUserId = config.BiggestBab[Math.floor(Math.random() * config.BiggestBab.length) + 0];
-
             console.log("RandomUserID: %s", randomUserId);
-
-            //bot.getChatMember(fromId, randomUserId);
-
-
-            console.log("Received command from: %s:%s", msg.chat.title, msg.from.username);
-            var fromId = msg.chat.id;
-            bot.sendMessage(fromId, "*Matty* is the biggest bab!", {
-                parse_mode: "Markdown"
-            });
+            say(msg, "*Matty* is the biggest bab!");
         }
     }
 );
 
-bot.onText(/(.+)/, function(msg, match) {
-    var score = swearjar.scorecard(match[0]);
-    var sum = 0;
 
-    for (i in score) {
-        if (score.hasOwnProperty(i)) {
-            sum += score[i];
-        }
-    }
+/************ Various Funcitons *************/
 
-    if (sum > 0) {
-        var found = false;
-        var scoreRecordIndex = arrayObjectIndexOf(config.scoreRecords, msg.from.id, "userID");
-        var dailyScoreIndex = arrayObjectIndexOf(dailyScore, msg.from.id, "userID");
-
-        if (scoreRecordIndex === -1) {
-            config.scoreRecords.push(new userScore(msg.from.id, sum, match[0]));
-            dailyScore.push(new userScore(msg.from.id, sum, match[0]));
-            console.log("%s swore for the very first time!\ncurrent score: %s\nlast message was %s", msg.from.username, config.scoreRecords[config.scoreRecords.length - 1].score, config.scoreRecords[config.scoreRecords.length - 1].lastMessage);
-        } else {
-            config.scoreRecords[scoreRecordIndex].score += sum;
-            if (dailyScoreIndex === -1) {
-                dailyScore.push(new userScore(msg.from.id, sum, match[0]));
-                console.log("%s swore for the first time today!\ncurrent score: %s\ntotal score: %s\nlast message was:\n%s", msg.from.username, dailyScore[dailyScore.length - 1].score, config.scoreRecords[scoreRecordIndex].score, dailyScore[dailyScore.length - 1].lastMessage);
-            } else {
-                dailyScore[dailyScoreIndex].score += sum;
-                dailyScore[dailyScoreIndex].lastMessage = match[0];
-
-                console.log("%s swore again today!\ncurrent score: %s\ntotal score: %s\nlast message was:\n%s", msg.from.username, dailyScore[dailyScoreIndex].score, config.scoreRecords[scoreRecordIndex].score, dailyScore[dailyScoreIndex].lastMessage);
-            }
-        }
-        fs.writeFile('./config.json', JSON.stringify(config), 'utf8'); //write out config once an hour
-    }
-});
-
+// returns the index of an object in an array by a search of one of the objects properties.
 function arrayObjectIndexOf(myArray, searchTerm, property) {
     for (var i = 0, len = myArray.length; i < len; i++) {
         if (myArray[i][property] === searchTerm) return i;
     }
     return -1;
+}
+
+// sorts an array of objects by a specific property.
+var sort_by = function(field, reverse, primer) {
+   var key = primer ?
+       function(x) {return primer(x[field])} :
+       function(x) {return x[field]};
+
+   reverse = !reverse ? 1 : -1;
+
+   return function (a, b) {
+       return a = key(a), b = key(b), reverse * ((a > b) - (b > a));
+     }
+}
+
+//wrapper for sendMessage
+function say(msgObj, message){
+    console.log("Received command from: %s:%s", msgObj.chat.title, msgObj.from.username);
+    bot.sendMessage(msgObj.chat.id, message, {parse_mode: "Markdown"});
+}
+
+//prototype for userScore object
+function userScore(userID, score, lastMessage, lastDate, firstName, lastName) {
+    this.userID = userID;
+    this.score = score;
+    this.lastMessage = lastMessage;
+    this.lastDate = lastDate;
+    this.firstname = firstName;
+    this.lastName = lastName;
+}
+
+function addFunctionListener(command, functionName) // Example: addFunctionListener("/uptime", uptime);
+{
+    commandArray.push(command);
+    functionArray.push(functionName);
+    console.log("Added Function: " + functionName + " to Bot Database");
+}
+
+function timer() {
+    seconds++;
+    if (seconds > 59) {
+        seconds = 0;
+        minutes++;
+    }
+    if (minutes > 59) {
+        minutes = 0;
+        fs.writeFile('./config.json', JSON.stringify(config), 'utf8'); //write out config once an hour
+        hours++;
+    }
+    if (hours > 23) {
+        hours = 0;
+        days++;
+        dailyScore = null; //resets the daily score array.
+    }
+    if (days > 6) {
+        days = 0;
+        weeks++;
+    }
+    if (weeks > 51) {
+        weeks = 0;
+        years++;
+    }
 }
 
 
