@@ -40,17 +40,18 @@ bot.onText(/(.+)/, function(msg, match) {
     }
 
     if (sum > 0) {
-        var found = false;
+        var lastname = typeof msg.reply_to_message.from.last_name !== "undefined" ? " " + msg.reply_to_message.from.last_name : "";
         var scoreRecordIndex = arrayObjectIndexOf(config.scoreRecords, msg.from.id, "userID");
         var dailyScoreIndex = arrayObjectIndexOf(dailyScore, msg.from.id, "userID");
 
         if (scoreRecordIndex === -1) {
-            config.scoreRecords.push(new userScore(msg.from.id, sum, match[0]));
-            dailyScore.push(new userScore(msg.from.id, sum, match[0]));
+            config.scoreRecords.push(new userScore(msg.from.id, sum, match[0], moment([]), null, null, null, 0));
+            dailyScore.push(new userScore(msg.from.id, sum, match[0], null, msg.from.first_name, lastname, 3));
         } else {
             config.scoreRecords[scoreRecordIndex].score += sum;
+            config.scoreRecords[scoreRecordIndex].lastDate = moment([]);
             if (dailyScoreIndex === -1) {
-                dailyScore.push(new userScore(msg.from.id, sum, match[0]));
+                dailyScore.push(new userScore(msg.from.id, sum, match[0], null, msg.from.first_name, lastname, 3));
             } else {
                 dailyScore[dailyScoreIndex].score += sum;
                 dailyScore[dailyScoreIndex].lastMessage = match[0];
@@ -67,12 +68,68 @@ bot.onText(/^\*?[a-zA-Z]{2,}\*?$/, function(msg) {
         functionArray[index](msg);
     }
 });
+/*
+bot.onText(/^\/givestar\S*$/i, function(msg) {
+    if (typeof msg.reply_to_message !== "undefined") {
+        var fromLastname = typeof msg.from.last_name !== "undefined" ? " " + msg.from.last_name : "";
+        var toLastname = typeof msg.reply_to_message.from.last_name !== "undefined" ? " " + msg.reply_to_message.from.last_name : "";
 
-bot.onText(/^\/uptime.?$/ig, function(msg) {
+        var dailyScoreIndex = arrayObjectIndexOf(dailyScore, msg.from.id, "userID");
+        var scoreRecordIndex = arrayObjectIndexOf(config.scoreRecords, msg.reply_to_message.from.id, "userID");
+
+        if (dailyScoreIndex === -1) { //dailyrecord of the sender
+            dailyScore.push(new userScore(msg.from.id, 0, "", moment([]), msg.from.first_name, fromLastname, 2, 0));
+
+            if (scoreRecordIndex === -1) { //record of the receiver
+                config.scoreRecords.push(new userScore(msg.reply_to_message.id, 0, "", moment([]), "", "", 0, 1));
+            } else {
+                config.scoreRecords[scoreRecordIndex].stars++;
+            }
+
+            say(msg, "🌟 Yaay~~ " + msg.reply_to_message.from.first_name + toLastname + " Got a Gold Star! 🌟");
+        } else {
+            if (dailyScore[dailyScoreIndex].starsToGive > 0) {
+                dailyScore[dailyScoreIndex].starsToGive--;
+
+                if (scoreRecordIndex === -1) { //record of the receiver
+                    config.scoreRecords.push(new userScore(msg.reply_to_message.id, 0, "", moment([]), "", "", 0, 1));
+                } else {
+                    config.scoreRecords[scoreRecordIndex].stars++;
+                }
+                say(msg, "🌟 Yaay~~ " + msg.reply_to_message.from.first_name + toLastname + " Got a Gold Star! 🌟");
+            } else {
+                say(msg, "Sorry " + msg.from.first_name + fromLastname + ", You have given out all your stars for today.");
+            }
+        }
+        fs.writeFile('./config.json', JSON.stringify(config), 'utf8'); //and it doesnt forget either.
+    }
+});
+
+bot.onText(/^\/stars\S*$/i, function(msg) {
+    if (typeof msg.reply_to_message !== "undefined") {
+        var lastname = typeof msg.reply_to_message.last_name !== "undefined" ? " " + msg.reply_to_message.last_name : "";
+        var scoreRecordIndex = arrayObjectIndexOf(config.scoreRecords, msg.reply_to_message.id, "userID");
+
+        if (scoreRecordIndex > -1) {
+            if (config.scoreRecords[scoreRecordIndex].stars > 0) {
+                say(msg, "🌟 " + msg.reply_to_message.from.first_name + lastname + " has received " + config.scoreRecords[scoreRecordIndex].stars + " Gold Stars! 🌟");
+            } else {
+                say(msg, msg.reply_to_message.from.first_name + lastname + " has never received a gold star :(");
+            }
+        } else {
+            config.scoreRecords.push(new userScore(msg.reply_to_message.id, 0, "", moment([]), "", "", 0, 0));
+            say(msg, msg.reply_to_message.from.first_name + lastname + " has never received a gold star :(");
+            fs.writeFile('./config.json', JSON.stringify(config), 'utf8'); //and it doesnt forget either.
+        }
+    }
+});
+*/
+
+bot.onText(/^\/uptime\S*$/i, function(msg) {
     say(msg, "Since my Last Restart I have Been active for:```\n\n" + years + " Years\n" + weeks + " Weeks\n" + days + " Days\n" + hours + " Hours\n" + minutes + " Minutes\n" + seconds + " Seconds```");
 });
 
-bot.onText(/^\/score.?$/ig, function(msg) {
+bot.onText(/^\/score\S*$/i, function(msg) {
     var messageToSend;
 
     if (typeof msg.reply_to_message !== "undefined") {
@@ -106,11 +163,11 @@ bot.onText(/^\/score.?$/ig, function(msg) {
     say(msg, messageToSend);
 });
 
-bot.onText(/^\/biggestkid.?$/ig, function(msg) {
+bot.onText(/^\/biggestkid\S*$/i, function(msg) {
     say(msg, "_looks around_\nI dunno little one, I dont see any big kids around here.");
 });
 
-bot.onText(/^\/cutestbab.?$/ig, function(msg) {
+bot.onText(/^\/cutestbab\S*$/i, function(msg) {
     if (typeof msg.reply_to_message !== "undefined") {
         console.log(msg.reply_to_message.from);
 
@@ -124,7 +181,7 @@ bot.onText(/^\/cutestbab.?$/ig, function(msg) {
     }
 });
 
-bot.onText(/^\/biggestbab.?$/ig, function(msg) {
+bot.onText(/^\/biggestbab\S*$/i, function(msg) {
         if (typeof msg.reply_to_message !== "undefined") {
             var userID = msg.reply_to_message.from.id;
             console.log("UserID: %s", userID);
@@ -176,13 +233,15 @@ function say(msgObj, message){
 }
 
 //prototype for userScore object
-function userScore(userID, score, lastMessage, lastDate, firstName, lastName) {
+function userScore(userID, score, lastMessage, lastDate, firstName, lastName, starsToGive, stars) {
     this.userID = userID;
     this.score = score;
     this.lastMessage = lastMessage;
     this.lastDate = lastDate;
     this.firstname = firstName;
     this.lastName = lastName;
+    this.starsToGive = starsToGive;
+    this.stars = stars;
 }
 
 function addFunctionListener(command, functionName) // Example: addFunctionListener("/uptime", uptime);
