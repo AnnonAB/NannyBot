@@ -40,20 +40,20 @@ bot.onText(/(.+)/, function(msg, match) {
     }
 
     if (sum > 0) {
-        var lastname = typeof msg.reply_to_message.from.last_name !== "undefined" ? " " + msg.reply_to_message.from.last_name : "";
+        var lastname = typeof msg.from.last_name !== "undefined" ? " " + msg.from.last_name : "";
         var scoreRecordIndex = arrayObjectIndexOf(config.scoreRecords, msg.from.id, "userID");
         var dailyScoreIndex = arrayObjectIndexOf(dailyScore, msg.from.id, "userID");
 
         if (scoreRecordIndex === -1) {
-            config.scoreRecords.push(new userScore(msg.from.id, sum, match[0], moment([]), null, null, null, 0));
-            dailyScore.push(new userScore(msg.from.id, sum, match[0], null, msg.from.first_name, lastname, 3));
+            config.scoreRecords.push(new userScoreObj(msg.from.id, moment([]), sum, 0));
+            dailyScore.push(new dailyScoreObj(msg.from.id, msg.from.first_name, lastname, sum, 0, match[0], 3));
         } else {
-            config.scoreRecords[scoreRecordIndex].score += sum;
+            config.scoreRecords[scoreRecordIndex].pmScore += sum;
             config.scoreRecords[scoreRecordIndex].lastDate = moment([]);
             if (dailyScoreIndex === -1) {
-                dailyScore.push(new userScore(msg.from.id, sum, match[0], null, msg.from.first_name, lastname, 3));
+                dailyScore.push(new dailyScoreObj(msg.from.id, msg.from.first_name, lastname, sum, 0, match[0], 3));
             } else {
-                dailyScore[dailyScoreIndex].score += sum;
+                dailyScore[dailyScoreIndex].pmScore += sum;
                 dailyScore[dailyScoreIndex].lastMessage = match[0];
             }
         }
@@ -68,7 +68,7 @@ bot.onText(/^\*?[a-zA-Z]{2,}\*?$/, function(msg) {
         functionArray[index](msg);
     }
 });
-/*
+
 bot.onText(/^\/givestar\S*$/i, function(msg) {
     if (typeof msg.reply_to_message !== "undefined") {
         var fromLastname = typeof msg.from.last_name !== "undefined" ? " " + msg.from.last_name : "";
@@ -78,12 +78,12 @@ bot.onText(/^\/givestar\S*$/i, function(msg) {
         var scoreRecordIndex = arrayObjectIndexOf(config.scoreRecords, msg.reply_to_message.from.id, "userID");
 
         if (dailyScoreIndex === -1) { //dailyrecord of the sender
-            dailyScore.push(new userScore(msg.from.id, 0, "", moment([]), msg.from.first_name, fromLastname, 2, 0));
+            dailyScore.push(new dailyScoreObj(msg.from.id, msg.from.first_name, fromLastname, 0, 0, "", 2));
 
             if (scoreRecordIndex === -1) { //record of the receiver
-                config.scoreRecords.push(new userScore(msg.reply_to_message.id, 0, "", moment([]), "", "", 0, 1));
+                config.scoreRecords.push(new userScoreObj(msg.reply_to_message.from.id, moment([]), 0, 1));
             } else {
-                config.scoreRecords[scoreRecordIndex].stars++;
+                config.scoreRecords[scoreRecordIndex].starScore++;
             }
 
             say(msg, "🌟 Yaay~~ " + msg.reply_to_message.from.first_name + toLastname + " Got a Gold Star! 🌟");
@@ -92,38 +92,38 @@ bot.onText(/^\/givestar\S*$/i, function(msg) {
                 dailyScore[dailyScoreIndex].starsToGive--;
 
                 if (scoreRecordIndex === -1) { //record of the receiver
-                    config.scoreRecords.push(new userScore(msg.reply_to_message.id, 0, "", moment([]), "", "", 0, 1));
+                    config.scoreRecords.push(new userScoreObj(msg.reply_to_message.from.id, moment([]), 0, 1));
                 } else {
-                    config.scoreRecords[scoreRecordIndex].stars++;
+                    config.scoreRecords[scoreRecordIndex].starScore++;
                 }
                 say(msg, "🌟 Yaay~~ " + msg.reply_to_message.from.first_name + toLastname + " Got a Gold Star! 🌟");
             } else {
                 say(msg, "Sorry " + msg.from.first_name + fromLastname + ", You have given out all your stars for today.");
             }
         }
-        fs.writeFile('./config.json', JSON.stringify(config), 'utf8'); //and it doesnt forget either.
+        fs.writeFile('./config.json', JSON.stringify(config), 'utf8');
     }
 });
 
 bot.onText(/^\/stars\S*$/i, function(msg) {
     if (typeof msg.reply_to_message !== "undefined") {
-        var lastname = typeof msg.reply_to_message.last_name !== "undefined" ? " " + msg.reply_to_message.last_name : "";
-        var scoreRecordIndex = arrayObjectIndexOf(config.scoreRecords, msg.reply_to_message.id, "userID");
+        var lastname = typeof msg.reply_to_message.from.last_name !== "undefined" ? " " + msg.reply_to_message.from.last_name : "";
+        var scoreRecordIndex = arrayObjectIndexOf(config.scoreRecords, msg.reply_to_message.from.id, "userID");
 
-        if (scoreRecordIndex > -1) {
-            if (config.scoreRecords[scoreRecordIndex].stars > 0) {
-                say(msg, "🌟 " + msg.reply_to_message.from.first_name + lastname + " has received " + config.scoreRecords[scoreRecordIndex].stars + " Gold Stars! 🌟");
+        if (scoreRecordIndex !== -1) {
+            if (config.scoreRecords[scoreRecordIndex].starScore > 0) {
+                say(msg, "🌟 " + msg.reply_to_message.from.first_name + lastname + " has received " + config.scoreRecords[scoreRecordIndex].starScore + " Gold Stars! 🌟");
             } else {
                 say(msg, msg.reply_to_message.from.first_name + lastname + " has never received a gold star :(");
             }
         } else {
-            config.scoreRecords.push(new userScore(msg.reply_to_message.id, 0, "", moment([]), "", "", 0, 0));
+            config.scoreRecords.push(new userScoreObj(msg.reply_to_message.from.id, moment([]), 0, 0));
             say(msg, msg.reply_to_message.from.first_name + lastname + " has never received a gold star :(");
-            fs.writeFile('./config.json', JSON.stringify(config), 'utf8'); //and it doesnt forget either.
+            fs.writeFile('./config.json', JSON.stringify(config), 'utf8');
         }
     }
 });
-*/
+
 
 bot.onText(/^\/uptime\S*$/i, function(msg) {
     say(msg, "Since my Last Restart I have Been active for:```\n\n" + years + " Years\n" + weeks + " Weeks\n" + days + " Days\n" + hours + " Hours\n" + minutes + " Minutes\n" + seconds + " Seconds```");
@@ -133,14 +133,14 @@ bot.onText(/^\/score\S*$/i, function(msg) {
     var messageToSend;
 
     if (typeof msg.reply_to_message !== "undefined") {
-        var lastname = typeof msg.reply_to_message.last_name !== "undefined" ? " " + msg.reply_to_message.last_name : "";
+        var lastname = typeof msg.reply_to_message.from.last_name !== "undefined" ? " " + msg.reply_to_message.from.last_name : "";
 
         var dailyScoreIndex = arrayObjectIndexOf(dailyScore, msg.reply_to_message.from.id, "userID");
 
         if (dailyScoreIndex === -1) {
             messageToSend = "*" + msg.reply_to_message.from.first_name + lastname + "* has been good. They have not used any naughty language today.";
         } else {
-            messageToSend = "*" + msg.reply_to_message.from.first_name + lastname + "* has been very naughty and used bad language today. Their daily score is *" + dailyScore[dailyScoreIndex].score + "*";
+            messageToSend = "*" + msg.reply_to_message.from.first_name + lastname + "* has been very naughty and used bad language today. Their daily score is *" + dailyScore[dailyScoreIndex].pmScore + "*";
         }
 
     } else {
@@ -153,11 +153,11 @@ bot.onText(/^\/score\S*$/i, function(msg) {
                 messageToSend = "*Amazing!* " + msg.from.first_name + lastname + " I have never heard you swear before. You get the biggest _hugs_ for being sooo good.";
             } else {
                 messageToSend = "*_Wow!_* " + msg.from.first_name + lastname + " you're a good and well behaved bab. I haven't caught any naughty words coming from your mouth today. ";
-                messageToSend += "But I have caught you swearing in the past.\n\nYour total score is *" + config.scoreRecords[scoreRecordIndex].score + "*.\n\nKeep up the good work!";
+                messageToSend += "But I have caught you swearing in the past.\n\nYour total score is *" + config.scoreRecords[scoreRecordIndex].pmScore + "*.\n\nKeep up the good work!";
             }
         } else {
-            messageToSend = "*" + msg.from.first_name + lastname + "*, you're such a pottymouth!\n\nYour current score for today is *" + dailyScore[dailyScoreIndex].score;
-            messageToSend += "*.\nYour total score is *" + config.scoreRecords[scoreRecordIndex].score + "*.\n\nI last caught you saying:\n" + dailyScore[dailyScoreIndex].lastMessage + "\n";
+            messageToSend = "*" + msg.from.first_name + lastname + "*, you're such a pottymouth!\n\nYour current score for today is *" + dailyScore[dailyScoreIndex].pmScore;
+            messageToSend += "*.\nYour total score is *" + config.scoreRecords[scoreRecordIndex].pmScore + "*.\n\nI last caught you saying:\n" + dailyScore[dailyScoreIndex].lastMessage + "\n";
         }
     }
     say(msg, messageToSend);
@@ -227,21 +227,27 @@ var sort_by = function(field, reverse, primer) {
 }
 
 //wrapper for sendMessage
-function say(msgObj, message){
+function say(msgObj, message) {
     console.log("Received command from: %s:%s", msgObj.chat.title, msgObj.from.username);
     bot.sendMessage(msgObj.chat.id, message, {parse_mode: "Markdown"});
 }
 
 //prototype for userScore object
-function userScore(userID, score, lastMessage, lastDate, firstName, lastName, starsToGive, stars) {
+function userScoreObj(userID, lastDate, pmScore, starScore) {
     this.userID = userID;
-    this.score = score;
-    this.lastMessage = lastMessage;
     this.lastDate = lastDate;
+    this.pmScore = pmScore;
+    this.starScore = starScore;
+}
+
+function dailyScoreObj(userID, firstName, lastName, pmScore, starScore, lastMessage, starsToGive) {
+    this.userID = userID;
     this.firstname = firstName;
     this.lastName = lastName;
+    this.pmScore = pmScore;
+    this.starScore = starScore;
+    this.lastMessage = lastMessage;
     this.starsToGive = starsToGive;
-    this.stars = stars;
 }
 
 function addFunctionListener(command, functionName) // Example: addFunctionListener("/uptime", uptime);
