@@ -121,7 +121,22 @@ bot.onText(/^\/stars\S*$/i, function(msg) {
             say(msg, msg.reply_to_message.from.first_name + lastname + " has never received a gold star :(");
             fs.writeFile('./config.json', JSON.stringify(config), 'utf8');
         }
+    } else {
+        var lastname = typeof msg.from.last_name !== "undefined" ? " " + msg.from.last_name : "";
+        var scoreRecordIndex = arrayObjectIndexOf(config.scoreRecords, msg.from.id, "userID");
+        if (scoreRecordIndex !== -1) {
+            if (config.scoreRecords[scoreRecordIndex].starScore > 0) {
+                say(msg, "🌟 " + msg.from.first_name + lastname + ", you have received " + config.scoreRecords[scoreRecordIndex].starScore + " Gold Stars! 🌟");
+            } else {
+                say(msg, "Sorry, " + msg.from.first_name + lastname + " you have never received a gold star :(");
+            }
+        } else {
+            config.scoreRecords.push(new userScoreObj(msg.from.id, moment([]), 0, 0));
+            say(msg, "Sorry, " + msg.from.first_name + lastname + " you have never received a gold star :(");
+            fs.writeFile('./config.json', JSON.stringify(config), 'utf8');
+        }
     }
+
 });
 
 
