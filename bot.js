@@ -79,26 +79,17 @@ bot.onText(/^\*?[a-zA-Z]{2,}\*?$/, function(msg) {
 
 bot.onText(/^\/givestar\S*$/i, function(msg) {
     if (typeof msg.reply_to_message !== "undefined") {
-        var messageToSend;
+        if (msg.from.id !== msg.reply_to_message.from.id) {
+            var messageToSend;
 
-        var fromLastname = typeof msg.from.last_name !== "undefined" ? " " + msg.from.last_name : "";
-        var toLastname = typeof msg.reply_to_message.from.last_name !== "undefined" ? " " + msg.reply_to_message.from.last_name : "";
+            var fromLastname = typeof msg.from.last_name !== "undefined" ? " " + msg.from.last_name : "";
+            var toLastname = typeof msg.reply_to_message.from.last_name !== "undefined" ? " " + msg.reply_to_message.from.last_name : "";
 
-        var dailyScoreIndex = arrayObjectIndexOf(dailyScore, msg.from.id, "userID");
-        var scoreRecordIndex = arrayObjectIndexOf(config.scoreRecords, msg.reply_to_message.from.id, "userID");
+            var dailyScoreIndex = arrayObjectIndexOf(dailyScore, msg.from.id, "userID");
+            var scoreRecordIndex = arrayObjectIndexOf(config.scoreRecords, msg.reply_to_message.from.id, "userID");
 
-        if (dailyScoreIndex === -1) { //dailyrecord of the sender
-            dailyScore.push(new dailyScoreObj(msg.from.id, msg.from.first_name, fromLastname, 0, 0, "", 2));
-
-            if (scoreRecordIndex === -1) { //record of the receiver
-                config.scoreRecords.push(new userScoreObj(msg.reply_to_message.from.id, moment([]), 0, 1));
-            } else {
-                config.scoreRecords[scoreRecordIndex].starScore++;
-            }
-            messageToSend = "🌟 Yaay~~ " + msg.reply_to_message.from.first_name + toLastname + " Got a Gold Star! 🌟";
-        } else {
-            if (dailyScore[dailyScoreIndex].starsToGive > 0) {
-                dailyScore[dailyScoreIndex].starsToGive--;
+            if (dailyScoreIndex === -1) { //dailyrecord of the sender
+                dailyScore.push(new dailyScoreObj(msg.from.id, msg.from.first_name, fromLastname, 0, 0, "", 2));
 
                 if (scoreRecordIndex === -1) { //record of the receiver
                     config.scoreRecords.push(new userScoreObj(msg.reply_to_message.from.id, moment([]), 0, 1));
@@ -107,11 +98,22 @@ bot.onText(/^\/givestar\S*$/i, function(msg) {
                 }
                 messageToSend = "🌟 Yaay~~ " + msg.reply_to_message.from.first_name + toLastname + " Got a Gold Star! 🌟";
             } else {
-                messageToSend = "Sorry " + msg.from.first_name + fromLastname + ", You have given out all your stars for today.";
+                if (dailyScore[dailyScoreIndex].starsToGive > 0) {
+                    dailyScore[dailyScoreIndex].starsToGive--;
+
+                    if (scoreRecordIndex === -1) { //record of the receiver
+                        config.scoreRecords.push(new userScoreObj(msg.reply_to_message.from.id, moment([]), 0, 1));
+                    } else {
+                        config.scoreRecords[scoreRecordIndex].starScore++;
+                    }
+                    messageToSend = "🌟 Yaay~~ " + msg.reply_to_message.from.first_name + toLastname + " Got a Gold Star! 🌟";
+                } else {
+                    messageToSend = "Sorry " + msg.from.first_name + fromLastname + ", You have given out all your stars for today.";
+                }
             }
+            fs.writeFile('./config.json', JSON.stringify(config), 'utf8');
+            say(msg, messageToSend);
         }
-        fs.writeFile('./config.json', JSON.stringify(config), 'utf8');
-        say(msg, messageToSend);
     }
 });
 
