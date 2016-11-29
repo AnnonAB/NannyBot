@@ -183,7 +183,7 @@ bot.onText(/^\/score\S*$/i, function(msg) {
             if (scoreRecordIndex === -1) {
                 messageToSend = "*Amazing!* " + msg.from.first_name + lastname + " I have never heard you swear before. You get the biggest _hugs_ for being sooo good.";
             } else {
-                if (config.scoreRecords[scoreRecordIndex].pmScore !== 0) {
+                if (config.scoreRecords[scoreRecordIndex].pmScore > 0) {
                     messageToSend = "*_Wow!_* " + msg.from.first_name + lastname + " you're a good and well behaved bab. I haven't caught any naughty words coming from your mouth today. ";
                     messageToSend += "But I have caught you swearing in the past.\n\nYour total score is *" + config.scoreRecords[scoreRecordIndex].pmScore + "*.\n\nKeep up the good work!";
                 } else {
@@ -191,10 +191,17 @@ bot.onText(/^\/score\S*$/i, function(msg) {
                 }
             }
         } else {
-            if (dailyScore[dailyScoreIndex].pmScore !== 0) {
+            if (dailyScore[dailyScoreIndex].pmScore > 0) {
                 messageToSend = "*" + msg.from.first_name + lastname + "*, you're such a pottymouth!\n\nYour current score for today is *" + dailyScore[dailyScoreIndex].pmScore;
                 messageToSend += "*.\nYour total score is *" + config.scoreRecords[scoreRecordIndex].pmScore + "*.\n\nI last caught you saying:\n" + dailyScore[dailyScoreIndex].lastMessage + "\n";
-            }
+            } else {
+                if (config.scoreRecords[scoreRecordIndex].pmScore > 0) {
+                    messageToSend = "*_Wow!_* " + msg.from.first_name + lastname + " you're a good and well behaved bab. I haven't caught any naughty words coming from your mouth today. ";
+                    messageToSend += "But I have caught you swearing in the past.\n\nYour total score is *" + config.scoreRecords[scoreRecordIndex].pmScore + "*.\n\nKeep up the good work!";
+                } else {
+                    messageToSend = "*Amazing!* " + msg.from.first_name + lastname + " I have never heard you swear before. You get the biggest _hugs_ for being sooo good.";
+		}
+	   }
         }
     }
     say(msg, messageToSend);
@@ -242,6 +249,24 @@ bot.onText(/^\/biggestbab\S*$/i, function(msg) {
     say(msg, messageToSend);
 });
 
+bot.onText(/^\/smolestbab\S*$/i, function(msg) {
+    var messageToSend;
+    if (typeof msg.reply_to_message !== "undefined") {
+        var userID = msg.reply_to_message.from.id;
+        console.log("UserID: %s", userID);
+
+        var index = config.SmolestBab.indexOf(userID);
+        console.log("index: %s", index);
+
+        if (index >= 0) {
+            var lastname = typeof msg.reply_to_message.from.last_name !== "undefined" ? " " + msg.reply_to_message.from.last_name : "";
+            messageToSend = "🍼🍼🍼 *" + msg.reply_to_message.from.first_name + lastname + "* is the smoooooolllest~~~ bab! 🍼🍼🍼";
+        }
+        console.log(msg.reply_to_message.from);
+    }
+    say(msg, messageToSend);
+});
+
 
 /************ Various Funcitons *************/
 
@@ -272,10 +297,12 @@ var sort_by = function(field, reverse, primer) {
 
 //wrapper for sendMessage
 function say(msgObj, message) {
+    if (typeof message !== "undefined") {
     console.log("Received command from: %s:%s", msgObj.chat.title, msgObj.from.username);
-    bot.sendMessage(msgObj.chat.id, message, {
-        parse_mode: "Markdown"
-    });
+        bot.sendMessage(msgObj.chat.id, message, {
+            parse_mode: "Markdown"
+        });
+    }
 }
 
 //prototype for userScore object
@@ -317,7 +344,7 @@ function timer() {
     if (hours > 23) {
         hours = 0;
         days++;
-        dailyScore = null; //resets the daily score array.
+        dailyScore = []; //resets the daily score array.
     }
     if (days > 6) {
         days = 0;
