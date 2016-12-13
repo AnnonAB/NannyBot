@@ -301,9 +301,20 @@ bot.onText(/^\/biggestbab\S*$/i, function(msg) {
         }
         console.log(msg.reply_to_message.from);
     } else {
-        var randomUserId = config.BiggestBab[Math.floor(Math.random() * config.BiggestBab.length) + 0];
+        var randomUserId = config.BiggestBab[Math.floor(Math.random() * config.BiggestBab.length) - 1];
         console.log("RandomUserID: %s", randomUserId);
-        messageToSend = "I cant decide who the biggest bab is, you all deserve that crown.";
+
+        bot.getChatMember(msg.chat.id, randomUserId).then (
+            function(resp) {
+                var lastname = typeof resp.user.last_name !== "undefined" ? " " + resp.user.last_name : "";
+                messageToSend = "*" + resp.user.first_name + lastname + "* is the biggest bab!";
+                say(msg, messageToSend);
+            }, function(resp) {
+                messageToSend = "I don't know who the biggest bab is, you're all such big babs!";
+                say(msg, messageToSend);
+            }
+        );
+        //messageToSend = "I cant decide who the biggest bab is, you all deserve that crown.";
     }
     say(msg, messageToSend);
 });
@@ -358,10 +369,9 @@ var sort_by = function(field, reverse, primer) {
 function say(msgObj, message) {
     if (typeof message !== "undefined") {
     console.log("Received command from: %s:%s", msgObj.chat.title, msgObj.from.username);
-        var retval = bot.sendMessage(msgObj.chat.id, message, {
+        bot.sendMessage(msgObj.chat.id, message, {
             parse_mode: "Markdown"
         });
-        console.log(retval);
     }
 }
 
