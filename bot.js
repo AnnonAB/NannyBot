@@ -10,6 +10,7 @@ var config = require('./config.json');
 var bot = new TelegramBot(t.token, {
     polling: true
 });
+
 var intervalId = setInterval(timer, 1000);
 
 var commandArray = [],
@@ -74,6 +75,64 @@ bot.onText(/^\*?[a-zA-Z]{2,}\*?$/, function(msg) {
     if (index >= 0) {
         //Function Exists
         functionArray[index](msg);
+    }
+});
+
+//var BotAdmins = bot.getChatAdministrators("@agroupnamefortesting");
+
+bot.onText(/^\/([a,r][d,e][d,m]bab)\s([a-z]{1,4})*$/i, function(msg, match) {
+    if (typeof msg.reply_to_message !== "undefined") {
+        bot.getChatAdministrators(msg.chat.id).then(function(resp) {
+            var messageToSend;
+            var adminIndex = -1;
+
+            for (var i = 0, len = resp.length; i < len; i++) {
+                if (resp[i].user.id === msg.from.id) adminIndex = i;
+            }
+
+            if (adminIndex > -1) { // person using this command is admin!
+                var userToAdd = msg.reply_to_message.from.id;
+
+                var bbIndex = config.BiggestBab.indexOf(userToAdd);
+                var sbIndex = config.SmolestBab.indexOf(userToAdd);
+
+                if (match[1].toLowerCase() === "addbab") {
+                    if (match[2].toLowerCase() === "big") {
+                        messageToSend = "User is already in list.";
+                        if (bbIndex === -1) {
+                            config.BiggestBab.push(userToAdd);
+                            messageToSend = "Added!";
+                        }
+                    }
+                    if (match[2].toLowerCase() === "smol") {
+                        messageToSend = "User is already in list.";
+                        if (sbIndex === -1) {
+                            config.SmolestBab.push(userToAdd);
+                            messageToSend = "Added!";
+                        }
+                    }
+                }
+
+                if (match[1].toLowerCase() === "rembab") {
+                    if (match[2].toLowerCase() === "big") {
+                        messageToSend = "User is not in list";
+                        if (bbIndex !== -1) {
+                            config.BiggestBab.splice(bbIndex, 1);
+                            messageToSend = "Removed!";
+                        }
+                    }
+                    if (match[2].toLowerCase() === "smol") {
+                        messageToSend = "User is not in list";
+                        if (sbIndex !== -1) {
+                            config.SmolestBab.splice(sbIndex, 1);
+                            messageToSend = "Removed!";
+                        }
+                    }
+                }
+                fs.writeFile('./config.json', JSON.stringify(config), 'utf8');
+                say(msg, messageToSend);
+            }
+        });
     }
 });
 
@@ -299,9 +358,10 @@ var sort_by = function(field, reverse, primer) {
 function say(msgObj, message) {
     if (typeof message !== "undefined") {
     console.log("Received command from: %s:%s", msgObj.chat.title, msgObj.from.username);
-        bot.sendMessage(msgObj.chat.id, message, {
+        var retval = bot.sendMessage(msgObj.chat.id, message, {
             parse_mode: "Markdown"
         });
+        console.log(retval);
     }
 }
 
@@ -355,6 +415,5 @@ function timer() {
         years++;
     }
 }
-
 
 addFunctionListener("/testFunc", testFunc);
