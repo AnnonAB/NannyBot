@@ -59,6 +59,7 @@ bot.onText(/(.+)/, function(msg, match) {
         } else {
             config.scoreRecords[scoreRecordIndex].pmScore += sum;
             config.scoreRecords[scoreRecordIndex].lastDate = moment([]);
+
             if (dailyScoreIndex === -1) {
                 dailyScore.push(new dailyScoreObj(msg.from.id, msg.from.first_name, lastname, sum, 0, match[0], 3));
             } else {
@@ -66,7 +67,18 @@ bot.onText(/(.+)/, function(msg, match) {
                 dailyScore[dailyScoreIndex].lastMessage = match[0];
             }
         }
-        fs.writeFile('./config.json', JSON.stringify(config), 'utf8'); //and it doesnt forget either.
+        writeConf(); //and it doesnt forget either.
+    }
+
+
+});
+
+bot.on('new_chat_participant', function(msg) {
+    if (typeof msg.new_chat_member !== "undefined") {
+        var lastname = typeof msg.new_chat_member.last_name !== "undefined" ? " " + msg.new_chat_member.last_name : "";
+        var messageToSend = "Welcome to the group " + msg.new_chat_member.first_name + lastname + ". Please review our /rules first, have fun :)";
+
+        say(msg, messageToSend);
     }
 });
 
@@ -78,15 +90,13 @@ bot.onText(/^\*?[a-zA-Z]{2,}\*?$/, function(msg) {
     }
 });
 
-//var BotAdmins = bot.getChatAdministrators("@agroupnamefortesting");
-
 bot.onText(/^\/([a,r][d,e][d,m]bab)\s([a-z]{1,4})*$/i, function(msg, match) {
     if (typeof msg.reply_to_message !== "undefined") {
         bot.getChatAdministrators(msg.chat.id).then(function(resp) {
             var messageToSend;
             var adminIndex = -1;
 
-            for (var i = 0, len = resp.length; i < len; i++) {
+            for (var i = 0; i < resp.length; i++) {
                 if (resp[i].user.id === msg.from.id) adminIndex = i;
             }
 
@@ -97,42 +107,83 @@ bot.onText(/^\/([a,r][d,e][d,m]bab)\s([a-z]{1,4})*$/i, function(msg, match) {
                 var sbIndex = config.SmolestBab.indexOf(userToAdd);
 
                 if (match[1].toLowerCase() === "addbab") {
-                    if (match[2].toLowerCase() === "big") {
-                        messageToSend = "User is already in list.";
-                        if (bbIndex === -1) {
-                            config.BiggestBab.push(userToAdd);
-                            messageToSend = "Added!";
-                        }
+                    messageToSend = "User is already in list.";
+
+                    if (match[2].toLowerCase() === "big" && bbIndex === -1) {
+                        config.BiggestBab.push(userToAdd);
+                        messageToSend = "Added!";
                     }
-                    if (match[2].toLowerCase() === "smol") {
-                        messageToSend = "User is already in list.";
-                        if (sbIndex === -1) {
-                            config.SmolestBab.push(userToAdd);
-                            messageToSend = "Added!";
-                        }
+
+                    if (match[2].toLowerCase() === "smol" && sbIndex === -1) {
+                        config.SmolestBab.push(userToAdd);
+                        messageToSend = "Added!";
                     }
                 }
 
                 if (match[1].toLowerCase() === "rembab") {
-                    if (match[2].toLowerCase() === "big") {
-                        messageToSend = "User is not in list";
-                        if (bbIndex !== -1) {
-                            config.BiggestBab.splice(bbIndex, 1);
-                            messageToSend = "Removed!";
-                        }
+                    messageToSend = "User is not in list.";
+
+                    if (match[2].toLowerCase() === "big" && bbIndex !== -1) {
+                        config.BiggestBab.splice(bbIndex, 1);
+                        messageToSend = "Removed!";
                     }
-                    if (match[2].toLowerCase() === "smol") {
-                        messageToSend = "User is not in list";
-                        if (sbIndex !== -1) {
-                            config.SmolestBab.splice(sbIndex, 1);
-                            messageToSend = "Removed!";
-                        }
+
+                    if (match[2].toLowerCase() === "smol" && sbIndex !== -1) {
+                        config.SmolestBab.splice(sbIndex, 1);
+                        messageToSend = "Removed!";
                     }
                 }
-                fs.writeFile('./config.json', JSON.stringify(config), 'utf8');
+                writeConf();
                 say(msg, messageToSend);
             }
         });
+    }
+});
+
+bot.onText(/^\/rules\s*((\d{1,2})(.*))*/i, function(msg, match) {
+    var messageToSend = "";
+
+    if (typeof match[2] === "undefined") {
+        for (var i = 0; i < config.groupRules.length; i++) {
+            messageToSend += "*" + (i + 1) + ".* " + config.groupRules[i] + "\n";
+        }
+        say(msg, messageToSend);
+    } else {
+        var ruleIndex = match[2] - 1;
+
+        if (match[3] === "") {
+            if (match[2] <= config.groupRules.length) {
+                messageToSend = "*" + match[2] + ".* " + config.groupRules[ruleIndex]
+            } else {
+                messageToSend = "Rule *" + match[2] + "* doesn't exist."
+            }
+            say(msg, messageToSend);
+        } else {
+            bot.getChatAdministrators(msg.chat.id).then(function(resp) {
+                var adminIndex = -1;
+
+                for (var i = 0; i < resp.length; i++) {
+                    if (resp[i].user.id === msg.from.id) adminIndex = i;
+                }
+
+                if (adminIndex !== -1) {
+                    if (match[3].substring(1).toLowerCase() === "delete") {
+                        config.groupRules.splice(ruleIndex, 1);
+                        messageToSend = "Removed rule *" + match[2] + "*.";
+                    } else {
+                        if (match[2] <= config.groupRules.length) {
+                            config.groupRules[ruleIndex] = match[3].substring(1);
+                            messageToSend = "Rule *" + match[2] + "* has been updated.";
+                        } else {
+                            config.groupRules.push(match[3].substring(1));
+                            messageToSend = "Rule *" + config.groupRules.length + "* has been added.";
+                        }
+                    }
+                    writeConf();
+                    say(msg, messageToSend);
+                }
+            });
+        }
     }
 });
 
@@ -170,7 +221,7 @@ bot.onText(/^\/givestar\S*$/i, function(msg) {
                     messageToSend = "Sorry " + msg.from.first_name + fromLastname + ", You have given out all your stars for today.";
                 }
             }
-            fs.writeFile('./config.json', JSON.stringify(config), 'utf8');
+            writeConf();
             say(msg, messageToSend);
         }
     }
@@ -178,6 +229,7 @@ bot.onText(/^\/givestar\S*$/i, function(msg) {
 
 bot.onText(/^\/stars\S*$/i, function(msg) {
     var messageToSend;
+
     if (typeof msg.reply_to_message !== "undefined") {
         var lastname = typeof msg.reply_to_message.from.last_name !== "undefined" ? " " + msg.reply_to_message.from.last_name : "";
         var scoreRecordIndex = arrayObjectIndexOf(config.scoreRecords, msg.reply_to_message.from.id, "userID");
@@ -191,11 +243,12 @@ bot.onText(/^\/stars\S*$/i, function(msg) {
         } else {
             config.scoreRecords.push(new userScoreObj(msg.reply_to_message.from.id, moment([]), 0, 0));
             messageToSend = msg.reply_to_message.from.first_name + lastname + " has never received a gold star :(";
-            fs.writeFile('./config.json', JSON.stringify(config), 'utf8');
+            writeConf();
         }
     } else {
         var lastname = typeof msg.from.last_name !== "undefined" ? " " + msg.from.last_name : "";
         var scoreRecordIndex = arrayObjectIndexOf(config.scoreRecords, msg.from.id, "userID");
+
         if (scoreRecordIndex !== -1) {
             if (config.scoreRecords[scoreRecordIndex].starScore > 0) {
                 messageToSend = "🌟 " + msg.from.first_name + lastname + ", you have received " + config.scoreRecords[scoreRecordIndex].starScore + " Gold Stars! 🌟";
@@ -205,7 +258,7 @@ bot.onText(/^\/stars\S*$/i, function(msg) {
         } else {
             config.scoreRecords.push(new userScoreObj(msg.from.id, moment([]), 0, 0));
             messageToSend = "Sorry, " + msg.from.first_name + lastname + " you have never received a gold star :(";
-            fs.writeFile('./config.json', JSON.stringify(config), 'utf8');
+            writeConf();
         }
     }
     say(msg, messageToSend);
@@ -259,8 +312,8 @@ bot.onText(/^\/score\S*$/i, function(msg) {
                     messageToSend += "But I have caught you swearing in the past.\n\nYour total score is *" + config.scoreRecords[scoreRecordIndex].pmScore + "*.\n\nKeep up the good work!";
                 } else {
                     messageToSend = "*Amazing!* " + msg.from.first_name + lastname + " I have never heard you swear before. You get the biggest _hugs_ for being sooo good.";
-		}
-	   }
+                }
+            }
         }
     }
     say(msg, messageToSend);
@@ -273,14 +326,12 @@ bot.onText(/^\/biggestkid\S*$/i, function(msg) {
 bot.onText(/^\/cutestbab\S*$/i, function(msg) {
     var messageToSend;
     if (typeof msg.reply_to_message !== "undefined") {
-        console.log(msg.reply_to_message.from);
-
         var lastname = typeof msg.reply_to_message.from.last_name !== "undefined" ? " " + msg.reply_to_message.from.last_name : "";
+
         messageToSend = "*" + msg.reply_to_message.from.first_name + lastname + "* is the cutest bab!";
     } else {
-        console.log(msg.from);
-
         var lastname = typeof msg.from.last_name !== "undefined" ? " " + msg.from.last_name : "";
+
         messageToSend = "*" + msg.from.first_name + lastname + "* is the cutest bab!";
     }
     say(msg, messageToSend);
@@ -288,28 +339,28 @@ bot.onText(/^\/cutestbab\S*$/i, function(msg) {
 
 bot.onText(/^\/biggestbab\S*$/i, function(msg) {
     var messageToSend;
+
     if (typeof msg.reply_to_message !== "undefined") {
         var userID = msg.reply_to_message.from.id;
-        console.log("UserID: %s", userID);
-
         var index = config.BiggestBab.indexOf(userID);
-        console.log("index: %s", index);
 
         if (index >= 0) {
             var lastname = typeof msg.reply_to_message.from.last_name !== "undefined" ? " " + msg.reply_to_message.from.last_name : "";
             messageToSend = "*" + msg.reply_to_message.from.first_name + lastname + "* is the biggest bab!";
         }
-        console.log(msg.reply_to_message.from);
     } else {
         var randomUserId = config.BiggestBab[Math.floor(Math.random() * config.BiggestBab.length) - 1];
+
         console.log("RandomUserID: %s", randomUserId);
 
-        bot.getChatMember(msg.chat.id, randomUserId).then (
+        bot.getChatMember(msg.chat.id, randomUserId).then(
             function(resp) {
                 var lastname = typeof resp.user.last_name !== "undefined" ? " " + resp.user.last_name : "";
+
                 messageToSend = "*" + resp.user.first_name + lastname + "* is the biggest bab!";
                 say(msg, messageToSend);
-            }, function(resp) {
+            },
+            function(resp) {
                 messageToSend = "I don't know who the biggest bab is, you're all such big babs!";
                 say(msg, messageToSend);
             }
@@ -323,16 +374,13 @@ bot.onText(/^\/smolestbab\S*$/i, function(msg) {
     var messageToSend;
     if (typeof msg.reply_to_message !== "undefined") {
         var userID = msg.reply_to_message.from.id;
-        console.log("UserID: %s", userID);
-
         var index = config.SmolestBab.indexOf(userID);
-        console.log("index: %s", index);
 
         if (index >= 0) {
             var lastname = typeof msg.reply_to_message.from.last_name !== "undefined" ? " " + msg.reply_to_message.from.last_name : "";
+
             messageToSend = "🍼🍼🍼 *" + msg.reply_to_message.from.first_name + lastname + "* is the smoooooolllest~~~ bab! 🍼🍼🍼";
         }
-        console.log(msg.reply_to_message.from);
     }
     say(msg, messageToSend);
 });
@@ -368,7 +416,7 @@ var sort_by = function(field, reverse, primer) {
 //wrapper for sendMessage
 function say(msgObj, message) {
     if (typeof message !== "undefined") {
-    console.log("Received command from: %s:%s", msgObj.chat.title, msgObj.from.username);
+        console.log("Received command from: %s:%s", msgObj.chat.title, msgObj.from.username);
         bot.sendMessage(msgObj.chat.id, message, {
             parse_mode: "Markdown"
         });
@@ -400,6 +448,11 @@ function addFunctionListener(command, functionName) // Example: addFunctionListe
     console.log("Added Function: " + functionName + " to Bot Database");
 }
 
+function writeConf() {
+    fs.writeFile('./config.json', JSON.stringify(config, null, '\t'), 'utf8');
+}
+
+
 function timer() {
     seconds++;
     if (seconds > 59) {
@@ -408,7 +461,7 @@ function timer() {
     }
     if (minutes > 59) {
         minutes = 0;
-        fs.writeFile('./config.json', JSON.stringify(config), 'utf8'); //write out config once an hour
+        writeConf(); //write out config once an hour
         hours++;
     }
     if (hours > 23) {
