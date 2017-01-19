@@ -422,7 +422,9 @@ var sort_by = function(field, reverse, primer) {
 //wrapper for sendMessage
 function say(msgObj, message) {
     if (typeof message !== "undefined") {
-        console.log("Received command from: %s:%s", msgObj.chat.title, msgObj.from.username);
+
+        var replyID = typeof msgObj.reply_to_message !== "undefined" ? " for UID " + msgObj.reply_to_message.from.id : "";
+        console.log("Received command in group %s from %s (UID: %s)%s", msgObj.chat.title, msgObj.from.username, msgObj.from.id, replyID);
         bot.sendMessage(msgObj.chat.id, message, {
             parse_mode: "Markdown"
         });
