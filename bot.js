@@ -3,6 +3,10 @@ var TelegramBot = require('node-telegram-bot-api'); //npm module
 var swearjar = require('swearjar'); //npm module
 var moment = require('moment'); //npm module
 var fs = require('fs');
+
+var http = require("http");
+var https = require("https");
+
 var t = require('./token.json');
 var config = require('./config.json');
 /******************/
@@ -390,6 +394,70 @@ bot.onText(/^\/smolestbab\S*$/i, function(msg) {
     }
     say(msg, messageToSend);
 });
+
+
+
+// Google command
+//  Searches google and returns the first three links found
+//  Command usage: /google {search query}
+bot.onText(/\/google (.+)/i,
+	function(msgObject)
+	{
+		// Parse Google's HTML
+		function callback(body)
+		{
+			let strpos = 0, response = "";
+			
+			// Prepare up to three links
+			//  I'd use regex, but cba with drama
+			for(let i = 1; i < 4; i++)
+			{
+				var subStart = body.indexOf('<h3 class="r"><a href="', strpos);
+				
+				if(subStart === -1)
+					break;
+				
+				subStart += 23;
+				strpos = body.indexOf('"', subStart);
+				
+				if(strpos === -1)
+					break;
+				
+				response += i.toString() + ": " + body.substr(subStart, strpos - subStart) + "\r\n";
+			}
+			
+			// Send googled links
+			if(response)
+			{
+				bot.sendMessage(msgObject.chat.id, response);
+			}
+		}
+		
+		// Setup Async HTTP Request
+		let body = "";
+		
+		let settings = {
+			hostname: "www.google.com.au",
+			port: 443,
+			path: "/search?hl=en&output=search&q=" + encodeURIComponent(msgObject.text.substr(9)),
+			headers: {
+				"User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36"
+			}
+		};
+		
+		// Async handler
+		let httpObject = https.request(settings,
+			function(res)
+			{
+				res.on("data", (chunk) => { body += chunk; });
+				res.on("end", () => { callback(body); });
+			}
+		);
+		
+		// Initiate async request
+		httpObject.end();
+	}
+);
 
 
 /************ Various Funcitons *************/
