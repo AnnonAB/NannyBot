@@ -51,6 +51,9 @@ exports.reload_packages = reload_packages;
 // Iterate over plugins under plugins/@param
 function iter_plugins(package_folder)
 {
+	if(package_folder.substr(0, 1) == "-")
+		return; // Ignore disabled packages
+	
 	var plugin_file_list = listFiles(plugin_dir + "/" + package_folder);
 	
 	for(var i in plugin_file_list)
@@ -63,6 +66,9 @@ function iter_plugins(package_folder)
 // Import plugin files under package_list/file
 function import_plugin(package_folder, plugin_file)
 {
+	if(plugin_file.substr(0, 1) == "-")
+		return; // Ignore disabled plugin files
+	
 	try
 	{
 		delete require.cache[require.resolve("./" + package_folder + "/" + plugin_file)];
