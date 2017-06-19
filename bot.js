@@ -478,6 +478,48 @@ bot.onText(/\/8ball (.+)/i,
 );
 
 
+// Urban Dictionary
+//  Usage: /urban {term}
+bot.onText(/\/(urban|udefine) (.+)/i,
+	function(msgObject)
+	{
+		// Handler for HTTP response
+		function callback(body)
+		{
+			var jResult = JSON.parse(body);
+			
+			if(jResult.list.length == 0)
+			{
+				say(msgObject, "Fluff! It seems that term hasn't been defined.");
+			}
+			else
+			{
+				say(msgObject, jResult.list[0].definition);
+			}
+		}
+		
+		// Async call urbandictionary.com
+		var body = "";
+		
+		var settings = {
+			hostname: "api.urbandictionary.com",
+			port: 80,
+			path: "/v0/define?term=" + encodeURIComponent(msgObject.text.substr(msgObject.text.indexOf(" ") + 1))
+		};
+		
+		var httpObject = http.request(settings,
+			function(res)
+			{
+				res.on("data", (chunk) => { body += chunk; });
+				res.on("end", () => { callback(body); });
+			}
+		);
+		
+		httpObject.end();
+	}
+);
+
+
 /************ Various Funcitons *************/
 
 // returns the index of an object in an array by a search of one of the objects properties.
