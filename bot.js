@@ -406,37 +406,37 @@ bot.onText(/\/google (.+)/i,
 		// Parse Google's HTML
 		function callback(body)
 		{
-			let strpos = 0, response = "";
-			
+			var strpos = 0, response = "";
+
 			// Prepare up to three links
 			//  I'd use regex, but cba with drama
-			for(let i = 1; i < 4; i++)
+			for(var i = 1; i < 4; i++)
 			{
 				var subStart = body.indexOf('<h3 class="r"><a href="', strpos);
-				
+
 				if(subStart === -1)
 					break;
-				
+
 				subStart += 23;
 				strpos = body.indexOf('"', subStart);
-				
+
 				if(strpos === -1)
 					break;
-				
+
 				response += i.toString() + ": " + body.substr(subStart, strpos - subStart) + "\r\n";
 			}
-			
+
 			// Send googled links
 			if(response)
 			{
 				bot.sendMessage(msgObject.chat.id, response);
 			}
 		}
-		
+
 		// Setup Async HTTP Request
-		let body = "";
-		
-		let settings = {
+		var body = "";
+
+		var settings = {
 			hostname: "www.google.com.au",
 			port: 443,
 			path: "/search?hl=en&output=search&q=" + encodeURIComponent(msgObject.text.substr(9)),
@@ -444,16 +444,16 @@ bot.onText(/\/google (.+)/i,
 				"User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36"
 			}
 		};
-		
+
 		// Async handler
-		let httpObject = https.request(settings,
+		var httpObject = https.request(settings,
 			function(res)
 			{
 				res.on("data", (chunk) => { body += chunk; });
 				res.on("end", () => { callback(body); });
 			}
 		);
-		
+
 		// Initiate async request
 		httpObject.end();
 	}
@@ -464,15 +464,15 @@ bot.onText(/\/google (.+)/i,
 bot.onText(/\/8ball (.+)/i,
 	function(msgObject)
 	{
-		let responseList = [
+		var responseList = [
 			"It is certain", "It is decidedly so", "Without a doubt", "Yes definitely",
 			"You may rely on it", "As I see it, yes", "Most likely", "Outlook good",
 			"Yes", "Signs point to yes", "Reply hazy try again", "Ask again later",
 			"Better not tell you now", "Cannot predict now", "Concentrate and ask again", "Don't count on it",
 			"My reply is no", "My sources say no", "Outlook not so good", "Very doubtful"];
-		
-		let randomChoice = responseList[Math.floor(Math.random() * responseList.length)];
-		
+
+		var randomChoice = responseList[Math.floor(Math.random() * responseList.length)];
+
 		say(msgObject, randomChoice);
 	}
 );
