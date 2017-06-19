@@ -467,7 +467,7 @@ bot.onText(/\/googlealt (.+)/i, function(msg, match)
         google.resultsPerPage = 3;
 
         google(match[1], function(err, res) {
-            if err console.error(err);
+            if (err) console.error(err);
 
             for (var i = 0; i < 3; ++i) {
                 var link = res.links[i];
