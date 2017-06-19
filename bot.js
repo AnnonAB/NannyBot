@@ -2,10 +2,13 @@
 var TelegramBot = require('node-telegram-bot-api'); //npm module
 var swearjar = require('swearjar'); //npm module
 var moment = require('moment'); //npm module
+var google =  require('google') //npm module
+
 var fs = require('fs');
 
 var http = require("http");
 var https = require("https");
+
 
 var t = require('./token.json');
 var config = require('./config.json');
@@ -400,8 +403,7 @@ bot.onText(/^\/smolestbab\S*$/i, function(msg) {
 // Google command
 //  Searches google and returns the first three links found
 //  Command usage: /google {search query}
-bot.onText(/\/google (.+)/i,
-	function(msgObject)
+bot.onText(/\/google (.+)/i,function(msgObject)
 	{
 		// Parse Google's HTML
 		function callback(body)
@@ -457,6 +459,23 @@ bot.onText(/\/google (.+)/i,
 		// Initiate async request
 		httpObject.end();
 	}
+);
+
+bot.onText(/\/googlealt (.+)/i, function(msg, match)
+    {
+        var messageToSend = "";
+        google.resultsPerPage = 3;
+
+        google(match[1], function(err, res) {
+            if (err) console.error(err);
+
+            for (var i = 0; i < 3; ++i) {
+                var link = res.links[i];
+                var messageToSend +=  "*" + i + ". [" + link.title + "](" + link.href + ")* - " + link.description + "\n";
+            }
+            say(msg, messageToSend);
+        }
+    }
 );
 
 
