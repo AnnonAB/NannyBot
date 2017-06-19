@@ -2,6 +2,8 @@
 var TelegramBot = require('node-telegram-bot-api'); //npm module
 var swearjar = require('swearjar'); //npm module
 var moment = require('moment'); //npm module
+var google =  require('google') //npm module
+
 var fs = require('fs');
 
 var http = require("http");
@@ -16,8 +18,10 @@ var bot = new TelegramBot(t.token, {
 });
 
 
-// Import Plugins
+// Skylar's Plugin Handler
 bot.plugins = require("./plugins/init.js");
+bot.plugins.init(bot);
+
 
 var intervalId = setInterval(timer, 1000);
 
@@ -399,69 +403,22 @@ bot.onText(/^\/smolestbab\S*$/i, function(msg) {
     say(msg, messageToSend);
 });
 
+bot.onText(/\/googlealt (.+)/i, function(msg, match)
+    {
+        var messageToSend = "";
+        google.resultsPerPage = 3;
 
-// 8Ball Command
-bot.onText(/\/8ball (.+)/i,
-	function(msgObject)
-	{
-		var responseList = [
-			"It is certain", "It is decidedly so", "Without a doubt", "Yes definitely",
-			"You may rely on it", "As I see it, yes", "Most likely", "Outlook good",
-			"Yes", "Signs point to yes", "Reply hazy try again", "Ask again later",
-			"Better not tell you now", "Cannot predict now", "Concentrate and ask again", "Don't count on it",
-			"My reply is no", "My sources say no", "Outlook not so good", "Very doubtful"];
+        google(match[1], function(err, res) {
+            if (err) console.error(err);
 
-		var randomChoice = responseList[Math.floor(Math.random() * responseList.length)];
-
-		say(msgObject, randomChoice);
-	}
+            for (var i = 0; i < 3; ++i) {
+                var link = res.links[i];
+                var messageToSend +=  "*" + i + ". [" + link.title + "](" + link.href + ")* - " + link.description + "\n";
+            }
+            say(msg, messageToSend);
+        }
+    }
 );
-
-
-// Urban Dictionary
-//  Usage: /urban {term}
-bot.onText(/\/(urban|udefine) (.+)/i,
-	function(msgObject)
-	{
-		// Handler for HTTP response
-		function callback(body)
-		{
-			var jResult = JSON.parse(body);
-			
-			if(jResult.list.length == 0)
-			{
-				say(msgObject, "Fluff! It seems that term hasn't been defined.");
-			}
-			else
-			{
-				say(msgObject, jResult.list[0].definition);
-			}
-		}
-		
-		// Async call urbandictionary.com
-		var body = "";
-		
-		var settings = {
-			hostname: "api.urbandictionary.com",
-			port: 80,
-			path: "/v0/define?term=" + encodeURIComponent(msgObject.text.substr(msgObject.text.indexOf(" ") + 1))
-		};
-		
-		var httpObject = http.request(settings,
-			function(res)
-			{
-				res.on("data", (chunk) => { body += chunk; });
-				res.on("end", () => { callback(body); });
-			}
-		);
-		
-		httpObject.end();
-	}
-);
-
-
-// Skylar's Plugin Handler
-bot.plugins.init(bot);
 
 
 /************ Various Funcitons *************/
