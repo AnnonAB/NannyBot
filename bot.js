@@ -413,10 +413,10 @@ bot.onText(/\/googlealt (.+)/i, function(msg, match)
 
             for (var i = 0; i < 3; ++i) {
                 var link = res.links[i];
-                var messageToSend +=  "*" + i + ". [" + link.title + "](" + link.href + ")* - " + link.description + "\n";
+                messageToSend +=  "*" + i + ". [" + link.title + "](" + link.href + ")* - " + link.description + "\n";
             }
             say(msg, messageToSend);
-        }
+        });
     }
 );
 
