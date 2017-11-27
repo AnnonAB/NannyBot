@@ -1,5 +1,6 @@
-# NannyBot
-NannyBot for Telegram
+# Stoneybot
+Stoneybot for Telegram
+Based off of Nannybot, forked from AnnonAB.
 
 
-Just a basic bot for our channel.
+Group Management bot for Stonerfurs.
