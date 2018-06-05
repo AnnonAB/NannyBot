@@ -121,12 +121,12 @@ bot.onText(/^\/([a,r][d,e][d,m]bab)\s([a-z]{1,4})*$/i, function(msg, match) {
             if (adminIndex > -1) { // person using this command is admin!
                 var userToAdd = msg.reply_to_message.from.id;
 
-                if typeof(config.BiggestBab === "undefined")
+                if (typeof config.BiggestBab === "undefined")
                     var bbIndex = 0;
                 else
                     var bbIndex = config.BiggestBab.indexOf(userToAdd);
 
-                if typeof(config.SmolestBab === "undefined")
+                if (typeof config.SmolestBab === "undefined")
                     var sbIndex = 0;
                 else
                     var sbIndex = config.SmolestBab.indexOf(userToAdd);
