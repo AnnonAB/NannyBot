@@ -1,4 +1,10 @@
 /**** Requires ****/
+const Promise = require('bluebird'); //cus broken promises :(((
+Promise.config({
+  cancellation: true
+});
+
+
 var TelegramBot = require('node-telegram-bot-api'); //npm module
 var swearjar = require('swearjar'); //npm module
 var moment = require('moment'); //npm module
@@ -101,12 +107,6 @@ bot.onText(/^\*?[a-zA-Z]{2,}\*?$/, function(msg) {
         functionArray[index](msg);
     }
 });
-
-bot.onText(/^sorry\snanny( bot|bot)/i, function(msg) {
-    var messages = ["Thats ok little one, I forgive you", "Aww, thank you for apologizing.", "*pats your head* You're forgiven"];
-
-    say(msg, messages[Math.floor(Math.random() * messages.length) - 1]);
-})
 
 bot.onText(/^\/([a,r][d,e][d,m]bab)\s([a-z]{1,4})*$/i, function(msg, match) {
     if (typeof msg.reply_to_message !== "undefined") {
