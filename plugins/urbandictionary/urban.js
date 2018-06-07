@@ -2,7 +2,7 @@ var http = require("http");
 
 exports.commands = {
 
-	reload_packages: {
+	urbandict: {
 		match:
 			[/\/(urban|udefine) (.+)/i],
 
@@ -51,4 +51,4 @@ exports.commands = {
 			}
 	}
 
-}
+};

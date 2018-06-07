@@ -1,17 +1,17 @@
 exports.commands = {
-	
-	reload_packages: {
+
+	magic8ball: {
 		match:
 			[/\/8ball (.+)/i],
-		
+
 		usage:
 			"/8ball Your Question",
-			
+
 		description:
 			"Magic 8 Ball!",
-			
+
 		callback:
-			function(tgBotObject, msgObject)
+			function pluginCallback(tgBotObject, msgObject)
 			{
 				var responseList = [
 					"It is certain", "It is decidedly so", "Without a doubt", "Yes definitely",
@@ -21,9 +21,8 @@ exports.commands = {
 					"My reply is no", "My sources say no", "Outlook not so good", "Very doubtful"];
 
 				var randomChoice = responseList[Math.floor(Math.random() * responseList.length)];
-				
+
 				tgBotObject.sendMessage(msgObject.chat.id, randomChoice);
 			}
 	}
-	
-}
+};

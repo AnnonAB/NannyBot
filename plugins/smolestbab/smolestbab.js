@@ -1,6 +1,6 @@
 exports.commands = {
 
-	some_identifier: {
+	smolestbab: {
 		match:
 			[/^\/smolestbab\S*$/i],
 

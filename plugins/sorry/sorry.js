@@ -1,6 +1,6 @@
 exports.commands = {
 
-	some_identifier: {
+	sorrynannybot: {
 		match:
 			[/^sorry\snanny( bot|bot)/i],
 

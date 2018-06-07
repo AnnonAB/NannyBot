@@ -1,6 +1,6 @@
 exports.commands = {
 
-	some_identifier: {
+	_some_identifier: { //change me
 		match:
 			[/\/say/i],
 
@@ -15,5 +15,5 @@ exports.commands = {
 			{
 				tgBotObject.sendMessage(msgObject.chat.id, msgObject.text.substr(msgObject.text.indexOf(" ") + 1));
 			}
-	},	
-}
+	}
+};

@@ -18,4 +18,4 @@ exports.commands = {
 			}
 	}
 
-}
+};
