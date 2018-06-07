@@ -40,7 +40,7 @@ exports.commands = {
 				};
 
 				var httpObject = http.request(settings,
-					function result(res)
+					function httpResult(res)
 					{
 						res.on("data", (chunk) => { body += chunk; });
 						res.on("end", () => { callback(body); });
