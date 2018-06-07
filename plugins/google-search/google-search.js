@@ -13,7 +13,7 @@ exports.commands = {
 			"Searches google and returns the first three links found",
 
 		callback:
-			function pluginCallback pluginCallback(tgBotObject, msgObject)
+			function pluginCallback(tgBotObject, msgObject)
 			{
 				// Parse Google's HTML
 				function callback(body)
