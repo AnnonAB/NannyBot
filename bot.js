@@ -475,7 +475,12 @@ function addFunctionListener(command, functionName) // Example: addFunctionListe
 }
 
 function writeConf() {
-    fs.writeFile('./config.json', JSON.stringify(config, null, '\t'), 'utf8', (error) => { console.log("Failed to write file"); });
+    fs.writeFile(
+        './config.json', JSON.stringify(config, null, '\t'), 'utf8', 
+        (error) => { 
+            if (error) throw error;
+            console.log("Settings Saved."); 
+        });
 }
 
 
