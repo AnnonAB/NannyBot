@@ -11,7 +11,7 @@ exports.commands = {
 			"Nannybot forgives you",
 
 		callback:
-			function(tgBotObject, msgObject)
+			function pluginCallback(tgBotObject, msgObject)
 			{
 				var messages = ["Thats ok little one, I forgive you", "Aww, thank you for apologizing.", "*pats your head* You're forgiven"];
 

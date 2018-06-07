@@ -38,7 +38,7 @@ function reload_packages()
 {
 	plugin_list = [];
 	var plugin_package_list = listSubfolders(plugin_dir);
-	
+
 	for(var i in plugin_package_list)
 	{
 		iter_plugins(plugin_package_list[i]);
@@ -53,9 +53,9 @@ function iter_plugins(package_folder)
 {
 	if(package_folder.substr(0, 1) == "-")
 		return; // Ignore disabled packages
-	
+
 	var plugin_file_list = listFiles(plugin_dir + "/" + package_folder);
-	
+
 	for(var i in plugin_file_list)
 	{
 		import_plugin(package_folder, plugin_file_list[i]);
@@ -68,12 +68,12 @@ function import_plugin(package_folder, plugin_file)
 {
 	if(plugin_file.substr(0, 1) == "-")
 		return; // Ignore disabled plugin files
-	
+
 	try
 	{
 		delete require.cache[require.resolve("./" + package_folder + "/" + plugin_file)];
 		var plugin = require("./" + package_folder + "/" + plugin_file);
-		
+
 		for(var i in plugin.commands)
 		{
 			plugin_list.push(plugin.commands[i]);
@@ -92,7 +92,7 @@ function handle_message(msgObject)
 	for(var plugIndex in plugin_list)
 	{
 		var plugin = plugin_list[plugIndex];
-		
+
 		for(var regexIndex in plugin.match)
 		{
 			if(msgObject.text.match(plugin.match[regexIndex]))
@@ -105,7 +105,7 @@ function handle_message(msgObject)
 
 
 // Init
-exports.init = function(tgBotObject)
+exports.init = function initPluginIF(tgBotObject)
 {
 	bot = tgBotObject;
 	reload_packages();

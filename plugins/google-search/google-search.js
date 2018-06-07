@@ -1,19 +1,19 @@
 var https = require("https");
 
 exports.commands = {
-	
+
 	googleSearch: {
 		match:
 			[/\/google (.+)/i],
-		
+
 		usage:
 			"/google What is the date today?",
-			
+
 		description:
 			"Searches google and returns the first three links found",
-			
+
 		callback:
-			function(tgBotObject, msgObject)
+			function pluginCallback pluginCallback(tgBotObject, msgObject)
 			{
 				// Parse Google's HTML
 				function callback(body)
@@ -59,7 +59,7 @@ exports.commands = {
 
 				// Async handler
 				var httpObject = https.request(settings,
-					function(res)
+					function result result(res)
 					{
 						res.on("data", (chunk) => { body += chunk; });
 						res.on("end", () => { callback(body); });
@@ -70,5 +70,5 @@ exports.commands = {
 				httpObject.end();
 			}
 	}
-	
+
 };
