@@ -56,7 +56,7 @@ function testFunc(msg) {
 }
 
 // the bot hears all!
-bot.onText(/(.+)/, function(msg, match) {
+bot.onText(/(.+)/, function message(msg, match) {
     var score = swearjar.scorecard(match[0]);
     var sum = 0;
 
@@ -91,7 +91,7 @@ bot.onText(/(.+)/, function(msg, match) {
 
 });
 
-bot.on('new_chat_participant', function(msg) {
+bot.on('new_chat_participant', function message(msg) {
     if (typeof msg.new_chat_member !== "undefined") {
         var lastname = typeof msg.new_chat_member.last_name !== "undefined" ? " " + msg.new_chat_member.last_name : "";
         var messageToSend = "Welcome to the group " + msg.new_chat_member.first_name + lastname + ". Please review our /rules first, have fun :)";
@@ -100,7 +100,7 @@ bot.on('new_chat_participant', function(msg) {
     }
 });
 
-bot.onText(/^\*?[a-zA-Z]{2,}\*?$/, function(msg) {
+bot.onText(/^\*?[a-zA-Z]{2,}\*?$/, function message(msg) {
     var index = commandArray.indexOf(msg.text);
     if (index >= 0) {
         //Function Exists
@@ -108,9 +108,9 @@ bot.onText(/^\*?[a-zA-Z]{2,}\*?$/, function(msg) {
     }
 });
 
-bot.onText(/^\/([a,r][d,e][d,m]bab)\s([a-z]{1,4})*$/i, function(msg, match) {
+bot.onText(/^\/([a,r][d,e][d,m]bab)\s([a-z]{1,4})*$/i, function message(msg, match) {
     if (typeof msg.reply_to_message !== "undefined") {
-        bot.getChatAdministrators(msg.chat.id).then(function(resp) {
+        bot.getChatAdministrators(msg.chat.id).then(function reply(resp) {
             var messageToSend;
             var adminIndex = -1;
 
@@ -165,7 +165,7 @@ bot.onText(/^\/([a,r][d,e][d,m]bab)\s([a-z]{1,4})*$/i, function(msg, match) {
     }
 });
 
-bot.onText(/^\/rules\s*((\d{1,2})(.*))*/i, function(msg, match) {
+bot.onText(/^\/rules\s*((\d{1,2})(.*))*/i, function message(msg, match) {
     var messageToSend = "";
 
     if (typeof match[2] === "undefined") {
@@ -184,7 +184,7 @@ bot.onText(/^\/rules\s*((\d{1,2})(.*))*/i, function(msg, match) {
             }
             say(msg, messageToSend);
         } else {
-            bot.getChatAdministrators(msg.chat.id).then(function(resp) {
+            bot.getChatAdministrators(msg.chat.id).then(function reply(resp) {
                 var adminIndex = -1;
 
                 for (var i = 0; i < resp.length; i++) {
@@ -212,7 +212,7 @@ bot.onText(/^\/rules\s*((\d{1,2})(.*))*/i, function(msg, match) {
     }
 });
 
-bot.onText(/^\/givestar\S*$/i, function(msg) {
+bot.onText(/^\/givestar\S*$/i, function message(msg) {
     if (typeof msg.reply_to_message !== "undefined") {
         if (msg.from.id !== msg.reply_to_message.from.id) {
             var messageToSend;
@@ -252,7 +252,7 @@ bot.onText(/^\/givestar\S*$/i, function(msg) {
     }
 });
 
-bot.onText(/^\/stars\S*$/i, function(msg) {
+bot.onText(/^\/stars\S*$/i, function message(msg) {
     var messageToSend;
 
     if (typeof msg.reply_to_message !== "undefined") {
@@ -290,11 +290,11 @@ bot.onText(/^\/stars\S*$/i, function(msg) {
 });
 
 
-bot.onText(/^\/uptime\S*$/i, function(msg) {
+bot.onText(/^\/uptime\S*$/i, function message(msg) {
     say(msg, "Since my Last Restart I have Been active for:```\n\n" + years + " Years\n" + weeks + " Weeks\n" + days + " Days\n" + hours + " Hours\n" + minutes + " Minutes\n" + seconds + " Seconds```");
 });
 
-bot.onText(/^\/score\S*$/i, function(msg) {
+bot.onText(/^\/score\S*$/i, function message(msg) {
     var messageToSend;
 
     if (typeof msg.reply_to_message !== "undefined") {
@@ -344,11 +344,11 @@ bot.onText(/^\/score\S*$/i, function(msg) {
     say(msg, messageToSend);
 });
 
-bot.onText(/^\/biggestkid\S*$/i, function(msg) {
+bot.onText(/^\/biggestkid\S*$/i, function message(msg) {
     say(msg, "_looks around_\nI dunno little one, I dont see any big kids around here.");
 });
 
-bot.onText(/^\/cutestbab\S*$/i, function(msg) {
+bot.onText(/^\/cutestbab\S*$/i, function message(msg) {
     var messageToSend;
     if (typeof msg.reply_to_message !== "undefined") {
         var lastname = typeof msg.reply_to_message.from.last_name !== "undefined" ? " " + msg.reply_to_message.from.last_name : "";
@@ -362,7 +362,7 @@ bot.onText(/^\/cutestbab\S*$/i, function(msg) {
     say(msg, messageToSend);
 });
 
-bot.onText(/^\/biggestbab\S*$/i, function(msg) {
+bot.onText(/^\/biggestbab\S*$/i, function message(msg) {
     var messageToSend;
 
     if (typeof msg.reply_to_message !== "undefined") {
@@ -379,13 +379,13 @@ bot.onText(/^\/biggestbab\S*$/i, function(msg) {
         console.log("RandomUserID: %s", randomUserId);
 
         bot.getChatMember(msg.chat.id, randomUserId).then(
-            function(resp) {
+            function reply(resp) {
                 var lastname = typeof resp.user.last_name !== "undefined" ? " " + resp.user.last_name : "";
 
                 messageToSend = "*" + resp.user.first_name + lastname + "* is the biggest bab!";
                 say(msg, messageToSend);
             },
-            function(resp) {
+            function reply(resp) {
                 messageToSend = "I don't know who the biggest bab is, you're all such big babs!";
                 say(msg, messageToSend);
             }
@@ -395,7 +395,7 @@ bot.onText(/^\/biggestbab\S*$/i, function(msg) {
     say(msg, messageToSend);
 });
 
-bot.onText(/^\/smolestbab\S*$/i, function(msg) {
+bot.onText(/^\/smolestbab\S*$/i, function message(msg) {
     var messageToSend;
     if (typeof msg.reply_to_message !== "undefined") {
         var userID = msg.reply_to_message.from.id;
@@ -410,12 +410,12 @@ bot.onText(/^\/smolestbab\S*$/i, function(msg) {
     say(msg, messageToSend);
 });
 
-bot.onText(/\/googlealt (.+)/i, function(msg, match)
+bot.onText(/\/googlealt (.+)/i, function message(msg, match)
     {
         var messageToSend = "";
         google.resultsPerPage = 3;
 
-        google(match[1], function(err, res) {
+        google(match[1], function ggl(err, res) {
             if (err) console.error(err);
 
             for (var i = 0; i < 3; ++i) {
