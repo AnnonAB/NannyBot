@@ -24,7 +24,7 @@ exports.commands = {
                 messageToSend = "🍼🍼🍼 *" + msgObject.reply_to_message.from.first_name + lastname + "* is the smoooooolllest~~~ bab! 🍼🍼🍼";
             }
         }
-        say(msgObject, messageToSend);
+        tgBotObject.sendMessage(msgObject.chat.id, messageToSend);
 			}
 	}
 };

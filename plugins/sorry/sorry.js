@@ -15,7 +15,7 @@ exports.commands = {
 			{
 				var messages = ["Thats ok little one, I forgive you", "Aww, thank you for apologizing.", "*pats your head* You're forgiven"];
 
-				say(msgObject, messages[Math.floor(Math.random() * messages.length)]);
+				tgBotObject.sendMessage(msgObject.chat.id, messages[Math.floor(Math.random() * messages.length)]);
 			}
 	}
 };

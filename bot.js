@@ -395,7 +395,7 @@ bot.onText(/^\/biggestbab\S*$/i, function message(msg) {
     say(msg, messageToSend);
 });
 
-bot.onText(/^\/smolestbab\S*$/i, function message(msg) {
+/*bot.onText(/^\/smolestbab\S*$/i, function message(msg) {
     var messageToSend;
     if (typeof msg.reply_to_message !== "undefined") {
         var userID = msg.reply_to_message.from.id;
@@ -408,25 +408,7 @@ bot.onText(/^\/smolestbab\S*$/i, function message(msg) {
         }
     }
     say(msg, messageToSend);
-});
-
-bot.onText(/\/googlealt (.+)/i, function message(msg, match)
-    {
-        var messageToSend = "";
-        google.resultsPerPage = 3;
-
-        google(match[1], function ggl(err, res) {
-            if (err) console.error(err);
-
-            for (var i = 0; i < 3; ++i) {
-                var link = res.links[i];
-                messageToSend +=  "*" + i + ". [" + link.title + "](" + link.href + ")* - " + link.description + "\n";
-            }
-            say(msg, messageToSend);
-        });
-    }
-);
-
+}); */
 
 /************ Various Funcitons *************/
 
@@ -493,7 +475,7 @@ function addFunctionListener(command, functionName) // Example: addFunctionListe
 }
 
 function writeConf() {
-    fs.writeFile('./config.json', JSON.stringify(config, null, '\t'), 'utf8');
+    fs.writeFile('./config.json', JSON.stringify(config, null, '\t'), 'utf8', (error) => { console.log("Failed to write file"); });
 }
 
 
