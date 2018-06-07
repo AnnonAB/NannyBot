@@ -17,5 +17,5 @@ exports.commands = {
 
 				say(msgObject, messages[Math.floor(Math.random() * messages.length)]);
 			}
-	},
-}
+	}
+};

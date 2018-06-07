@@ -62,6 +62,16 @@ function iter_plugins(package_folder)
 	}
 }
 
+function say(msgObj, message) {
+    if (typeof message !== "undefined") {
+
+        var replyID = typeof msgObj.reply_to_message !== "undefined" ? " for UID " + msgObj.reply_to_message.from.id : "";
+        console.log("Received command in group %s from %s (UID: %s)%s", msgObj.chat.title, msgObj.from.username, msgObj.from.id, replyID);
+        bot.sendMessage(msgObj.chat.id, message, {
+            parse_mode: "Markdown"
+        });
+    }
+}
 
 // Import plugin files under package_list/file
 function import_plugin(package_folder, plugin_file)
@@ -110,4 +120,4 @@ exports.init = function initPluginIF(tgBotObject)
 	bot = tgBotObject;
 	reload_packages();
 	tgBotObject.onText(/.*/, handle_message);
-}
+};
