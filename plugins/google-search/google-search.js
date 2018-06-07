@@ -59,7 +59,7 @@ exports.commands = {
 
 				// Async handler
 				var httpObject = https.request(settings,
-					function result httpResult(res)
+					function httpResult(res)
 					{
 						res.on("data", (chunk) => { body += chunk; });
 						res.on("end", () => { callback(body); });
